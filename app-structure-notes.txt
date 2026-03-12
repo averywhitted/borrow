@@ -1,0 +1,191 @@
+BORROW — APP STRUCTURE NOTES
+============================================================
+Based on Prototype 01 (10 screens)
+Last updated: 2026-03-12
+============================================================
+
+
+DECISIONS MADE
+--------------
+- Book clubs: IN — core feature, needs full design pass
+- Deposits: OUT — involving money is antithetical to the app's intent.
+  All references to deposit amounts removed from the design.
+- Map view in Search: OUT — overly complicated for now. Search is
+  list-only.
+- Social auth (Apple, Google, Facebook): OUT — email auth only.
+  Simpler stack, fewer third-party dependencies.
+- Editorially curated lists (e.g. "Coffee Shop Favorites"): LATER —
+  requires content ops, not appropriate for early product.
+- Requests flow: needs a fully fleshed out framework (see below).
+- Book return flow: IN — required to close the loan loop.
+- Report / block / moderation: IN — required for trust and safety.
+
+
+WHAT'S SOLID
+------------
+- The core loop is clear: browse nearby books → view lenders → send
+  borrow request → chat → exchange. That's a well-defined flow.
+- Embedding the borrow request card inside the message thread is a
+  smart design choice — keeps context in one place.
+- Status badges on Your Library (In Library / On Loan / Overdue) are
+  useful at a glance.
+- The Inbox / Requests tab split in Messages is the right call —
+  borrow requests and regular chat are meaningfully different.
+- Lender stats (books / borrows / lends) on the Book Detail screen
+  build trust without needing a separate rating system.
+
+
+WHAT'S MISSING
+--------------
+
+1. BOOK CLUB FEATURE
+   Book clubs are a core part of the app and need full design before
+   building, as they will likely affect the navigation structure.
+   Questions to answer:
+   - How do you create or join a club? (open/invite-only/location-
+     based?)
+   - Does a club have its own shared library, reading schedule, or
+     discussion board?
+   - Where does it live in the nav — a dedicated tab?
+   - How does borrowing interact with club membership? (e.g. can you
+     borrow from club members first?)
+
+2. REQUESTS FLOW (needs full framework)
+   The Requests tab in Messages exists but has never been designed.
+   This is a multi-step flow that needs to cover both sides:
+
+   Borrower side:
+   - Pending request sent (waiting on lender)
+   - Request accepted — what happens next? Does a loan officially
+     start? Does the borrower confirm pickup?
+   - Request declined — is a reason shown? Can they request from a
+     different lender?
+
+   Lender side:
+   - Incoming request card showing: borrower info, book requested,
+     desired duration
+   - Accept / Decline actions
+   - After accepting: confirmation that a loan is now active
+
+   The request card design in the message thread is a good start —
+   that pattern should extend to the Requests tab itself.
+
+3. BOOK RETURN FLOW
+   "On Loan" and "Overdue" statuses exist but there's no flow for
+   closing the loop. Suggested steps:
+   - Borrower marks "I'm returning this" (triggers notification to
+     lender)
+   - Lender confirms receipt
+   - Book status returns to "In Library"
+   - Overdue handling: automatic reminder notifications before and
+     after the due date; no late fee (deposits removed), but lender
+     can flag the exchange.
+
+4. ONBOARDING FLOW
+   After signup, a new user has no books and no context. Needs a
+   short setup flow:
+   - Location permission / confirmation
+   - Add your first book (prompts them to contribute to the community)
+   - Brief explainer of how borrowing works
+   Without this, new users land on a populated Home screen with no
+   clear starting point.
+
+5. REPORT / BLOCK / MODERATION
+   Borrowing physical items from strangers requires a safety layer:
+   - Report user (from profile or message thread)
+   - Block user (removes them from your lender list and messaging)
+   - Flagging a bad exchange (e.g. book not returned, damaged)
+   - Some form of moderation queue or admin review for reports
+   The gear icon already in the message thread header is a natural
+   entry point for block/report from within a conversation.
+
+6. PUBLIC PROFILE / VIEW LIBRARY
+   "View Library" button exists on Book Detail but the screen doesn't.
+   Edit Profile exists but the read-only profile view doesn't. Both
+   need to be designed — for your own profile and for viewing others.
+
+7. OVERDUE HANDLING
+   The "Overdue" badge needs a defined process behind it:
+   - Automated reminders (push notifications) before and on due date
+   - Lender notified when a book goes overdue
+   - A way to extend the loan by mutual agreement
+   - A way to flag an unreturned book (feeds into moderation)
+
+8. NOTIFICATIONS
+   No notification design exists yet. Critical triggers include:
+   - New borrow request received
+   - Request accepted / declined
+   - New message
+   - Book due soon / overdue
+   - Book returned / confirmed
+   Worth deciding early what's push vs. in-app only.
+
+9. SETTINGS
+   A gear icon appears in the message thread but no Settings screen
+   exists. Minimum needed:
+   - Notification preferences
+   - Account management (email, password)
+   - Privacy / location settings
+   - Delete or deactivate account
+
+
+WHAT NEEDS MORE THOUGHT
+-----------------------
+
+1. HOME vs. SEARCH OVERLAP
+   Both screens currently have a search bar and genre filters —
+   their jobs are too similar. Suggested split:
+   - Home = discovery and social feed (recently added nearby, activity
+     from people you've exchanged with, community lists)
+   - Search = intentional, query-driven search with filters
+   The search bar on Home should probably just hand off to the Search
+   tab rather than being its own thing.
+
+2. LENDER LOAN DURATION PREFERENCES
+   The Borrow Request screen offers 3/4/5 weeks, but it's unclear
+   whether the lender sets a maximum per book or whether these are
+   always fixed options. A lender with a rare or beloved book may
+   want to cap the loan at 2 weeks. This should be a per-book
+   setting in Edit Book Details.
+
+3. THE "+" BUTTON ON HOME
+   Tapping "+" on a book card in the Home feed is ambiguous — does
+   it mean "I own this and want to add it to my library" or "I want
+   to borrow this"? The former requires a condition confirmation
+   step. The latter is more of a wishlist/save feature, which is a
+   different concept entirely and isn't accounted for elsewhere.
+   Needs a clear decision.
+
+4. EMPTY STATES
+   No empty states are designed. Key ones needed:
+   - Your Library with no books (strong prompt to add one)
+   - Home when your neighborhood has no other users yet
+   - Messages with no conversations
+   - Search with no results
+   These matter most for new users and sparse neighborhoods.
+
+
+WHAT'S CUT OR DEFERRED
+-----------------------
+- Deposits / payments: removed entirely. The app is free to use.
+- Map view in Search: cut. List-only for now.
+- Apple / Google / Facebook auth: cut. Email only.
+- Editorially curated lists: deferred to a later phase.
+- Condition tracking beyond a simple dropdown: not needed yet.
+
+
+SUGGESTED PRIORITY ORDER FOR BUILDING
+---------------------------------------
+1.  Auth (email) + Onboarding
+2.  Add Book / Your Library
+3.  Home feed (browse nearby books)
+4.  Book Detail + Lender list (no deposit)
+5.  Borrow Request flow
+6.  Requests tab — full framework (accept/decline, lender + borrower)
+7.  Messages + Message Thread
+8.  Book Return flow + status updates + overdue handling
+9.  Book Clubs
+10. Public Profile / View Library
+11. Report / Block / Moderation
+12. Notifications
+13. Settings
