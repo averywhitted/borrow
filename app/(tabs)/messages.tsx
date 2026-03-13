@@ -1,39 +1,71 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
-import { useState } from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
+import { useState, useRef } from 'react';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
-
-const INBOX = [
-  { id: '1', name: 'Jaydon Workman', preview: "Speaking of… I'm like 3 chapters in and already emotionally unstable.", time: '2m ago', unread: true, borrowing: 1, lending: 1 },
-  { id: '2', name: 'Priya Okonkwo', preview: 'Sounds good! I can leave it on my stoop tomorrow morning.', time: '1h ago', unread: false, borrowing: 0, lending: 1 },
-  { id: '3', name: 'Marcus Lee', preview: 'No worries at all, take your time with it.', time: 'Yesterday', unread: false, borrowing: 1, lending: 0 },
-];
+import { useThreads } from '../../store/threads';
 
 const REQUESTS = [
   { id: '4', name: 'Sasha Volkov', book: 'Dune', requestedDate: 'Mar 12', duration: '3 weeks', incoming: true },
   { id: '5', name: 'Lily Chen', book: 'Kindred', requestedDate: 'Mar 10', duration: '4 weeks', incoming: false, status: 'pending' },
 ];
 
+function formatTime(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 60_000) return 'Just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return 'Yesterday';
+}
+
 export default function MessagesScreen() {
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
+  const tabAnim = useRef(new Animated.Value(0)).current;
+  const threads = useThreads();
+
+  const switchTab = (tab: 'inbox' | 'requests') => {
+    setActiveTab(tab);
+    Animated.spring(tabAnim, {
+      toValue: tab === 'inbox' ? 0 : 1,
+      useNativeDriver: false,
+      speed: 20,
+      bounciness: 5,
+    }).start();
+  };
+
+  // Derive inbox from thread store
+  const inbox = [...threads]
+    .sort((a, b) => b.lastUpdated - a.lastUpdated)
+    .map((t) => {
+      const lastText = [...t.messages].reverse().find((m) => m.text && !m.isStatus)?.text ?? '';
+      return {
+        id: t.id,
+        name: t.neighborName,
+        preview: lastText,
+        time: formatTime(t.lastUpdated),
+        unread: t.id === '1',
+        borrowing: t.borrowingCount ?? 0,
+        lending: t.lendingCount ?? 0,
+      };
+    });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.heading}>Messages</Text>
 
+        {/* Animated tab selector */}
         <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'inbox' && styles.tabActive]}
-            onPress={() => setActiveTab('inbox')}
-          >
+          <Animated.View
+            style={[
+              styles.tabIndicator,
+              { left: tabAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '50%'] }) },
+            ]}
+          />
+          <TouchableOpacity style={styles.tab} onPress={() => switchTab('inbox')}>
             <Text style={[styles.tabText, activeTab === 'inbox' && styles.tabTextActive]}>Inbox</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'requests' && styles.tabActive]}
-            onPress={() => setActiveTab('requests')}
-          >
+          <TouchableOpacity style={styles.tab} onPress={() => switchTab('requests')}>
             <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>Requests</Text>
             {REQUESTS.length > 0 && (
               <View style={styles.badge}>
@@ -45,10 +77,10 @@ export default function MessagesScreen() {
 
         <ScrollView contentContainerStyle={styles.list}>
           {activeTab === 'inbox'
-            ? INBOX.map((convo) => (
+            ? inbox.map((convo) => (
                 <TouchableOpacity
                   key={convo.id}
-                  style={[styles.row, Shadow]}
+                  style={styles.row}
                   onPress={() => router.push(`/thread/${convo.id}`)}
                 >
                   <Avatar name={convo.name} size={44} />
@@ -66,7 +98,7 @@ export default function MessagesScreen() {
             : REQUESTS.map((req) => (
                 <TouchableOpacity
                   key={req.id}
-                  style={[styles.row, Shadow]}
+                  style={styles.row}
                   onPress={() => router.push(`/thread/${req.id}`)}
                 >
                   <Avatar name={req.name} size={44} />
@@ -97,47 +129,48 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   container: { flex: 1, padding: 16 },
   heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black, marginBottom: 16 },
+
+  // Tab bar with sliding indicator
   tabBar: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: Colors.black,
+    position: 'relative',
+    borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.pill,
     backgroundColor: Colors.white,
     marginBottom: 16,
     padding: 3,
   },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
+  tabIndicator: {
+    position: 'absolute',
+    top: 3, bottom: 3,
+    width: '50%',
+    backgroundColor: Colors.black,
     borderRadius: Radius.pill,
   },
-  tabActive: { backgroundColor: Colors.black },
+  tab: {
+    flex: 1, flexDirection: 'row',
+    justifyContent: 'center', alignItems: 'center',
+    gap: 6, paddingVertical: 8,
+    borderRadius: Radius.pill,
+    zIndex: 1,
+  },
   tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.gray },
   tabTextActive: { color: Colors.white },
+
   badge: {
-    backgroundColor: Colors.purple,
-    borderRadius: Radius.pill,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: Colors.purple, borderRadius: Radius.pill,
+    minWidth: 18, height: 18,
+    justifyContent: 'center', alignItems: 'center',
     paddingHorizontal: 5,
   },
   badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+
   list: { gap: 10, paddingBottom: 32 },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 12,
-    gap: 12,
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 12, gap: 12,
   },
   rowInfo: { flex: 1, gap: 3 },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -147,20 +180,13 @@ const styles = StyleSheet.create({
   rowSubtitle: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
   rowPreview: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
   unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 10, height: 10, borderRadius: 5,
     backgroundColor: Colors.teal,
-    borderWidth: 1,
-    borderColor: Colors.black,
+    borderWidth: 1, borderColor: Colors.black,
   },
   incomingBadge: {
-    backgroundColor: Colors.purple,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4,
   },
   incomingBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
 });

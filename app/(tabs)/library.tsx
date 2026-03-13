@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
+import { AnimatedButton } from '../../components/AnimatedButton';
 
 type BookStatus = 'in-library' | 'lending' | 'borrowing' | 'overdue';
 
@@ -25,9 +26,16 @@ const STATUS_CONFIG: Record<BookStatus, { label: string; color: string }> = {
   'overdue':    { label: 'Overdue',    color: '#C0392B'      },
 };
 
-// Chip color for each filter key
+// Chip accent color (border + text when inactive; fill when active)
 const CHIP_COLORS: Record<string, string> = {
-  all:       Colors.teal,
+  all:       Colors.black,
+  borrowing: Colors.teal,
+  lending:   Colors.purple,
+};
+
+// Active background (Books uses dark grey, others use the accent color)
+const CHIP_ACTIVE_BG: Record<string, string> = {
+  all:       '#333',
   borrowing: Colors.teal,
   lending:   Colors.purple,
 };
@@ -55,27 +63,28 @@ export default function LibraryScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.heading}>Your Library</Text>
-          <TouchableOpacity style={[styles.addButton, Shadow]} onPress={() => router.push('/add-book')}>
+          <AnimatedButton style={[styles.addButton, Shadow]} onPress={() => router.push('/add-book')}>
             <MaterialIcons name="add" size={18} color={Colors.white} />
             <Text style={styles.addButtonText}>Add Book</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         {/* Semantic filter chips */}
         <View style={styles.chips}>
           {CHIPS.map((chip) => {
             const active = activeFilter === chip.key;
-            const color = CHIP_COLORS[chip.key];
+            const accent = CHIP_COLORS[chip.key];
+            const activeBg = CHIP_ACTIVE_BG[chip.key];
             return (
               <TouchableOpacity
                 key={chip.key}
-                style={[styles.chip, { borderColor: color, backgroundColor: active ? color : Colors.white }, Shadow]}
+                style={[styles.chip, { borderColor: accent, backgroundColor: active ? activeBg : Colors.white }, Shadow]}
                 onPress={() => setActiveFilter(chip.key)}
               >
-                <Text style={[styles.chipValue, { color: active ? Colors.white : color }]}>
+                <Text style={[styles.chipValue, { color: active ? Colors.white : accent }]}>
                   {chip.value}
                 </Text>
-                <Text style={[styles.chipLabel, { color: active ? Colors.white : color }]}>
+                <Text style={[styles.chipLabel, { color: active ? Colors.white : accent }]}>
                   {chip.label}
                 </Text>
               </TouchableOpacity>
@@ -94,7 +103,7 @@ export default function LibraryScreen() {
             return (
               <TouchableOpacity
                 key={book.id}
-                style={[styles.card, Shadow]}
+                style={styles.card}
                 onPress={() => router.push(`/book/${book.id}`)}
               >
                 <BookCover title={book.title} author={book.author} width={60} height={80} />

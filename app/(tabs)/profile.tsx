@@ -8,7 +8,13 @@ import { Avatar } from '../../components/Avatar';
 import { useWishlist, removeFromWishlist } from '../../store/wishlist';
 
 const CHIP_COLORS: Record<string, string> = {
-  all:       Colors.teal,
+  all:       Colors.black,
+  borrowing: Colors.teal,
+  lending:   Colors.purple,
+};
+
+const CHIP_ACTIVE_BG: Record<string, string> = {
+  all:       '#333',
   borrowing: Colors.teal,
   lending:   Colors.purple,
 };
@@ -71,17 +77,18 @@ export default function ProfileScreen() {
         <View style={styles.statsRow}>
           {STAT_FILTERS.map((stat) => {
             const active = activeFilter === stat.key;
-            const color = CHIP_COLORS[stat.key];
+            const accent = CHIP_COLORS[stat.key];
+            const activeBg = CHIP_ACTIVE_BG[stat.key];
             return (
               <TouchableOpacity
                 key={stat.key}
-                style={[styles.statChip, { borderColor: color, backgroundColor: active ? color : Colors.white }, Shadow]}
+                style={[styles.statChip, { borderColor: accent, backgroundColor: active ? activeBg : Colors.white }, Shadow]}
                 onPress={() => setActiveFilter(stat.key)}
               >
-                <Text style={[styles.statValue, { color: active ? Colors.white : color }]}>
+                <Text style={[styles.statValue, { color: active ? Colors.white : accent }]}>
                   {stat.value}
                 </Text>
-                <Text style={[styles.statLabel, { color: active ? Colors.white : color }]}>
+                <Text style={[styles.statLabel, { color: active ? Colors.white : accent }]}>
                   {stat.label}
                 </Text>
               </TouchableOpacity>

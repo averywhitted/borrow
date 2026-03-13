@@ -28,16 +28,22 @@ export interface Thread {
   neighborName: string;
   messages: Message[];
   lastUpdated: number;
+  borrowingCount?: number;
+  lendingCount?: number;
 }
 
 // ─── Seed data ───────────────────────────────────────────────────────────────
+
+const NOW = Date.now();
 
 const threadStore: Thread[] = [
   {
     id: '1',
     neighborId: 'jaydon',
     neighborName: 'Jaydon Workman',
-    lastUpdated: Date.now(),
+    lastUpdated: NOW - 2 * 60 * 1000,
+    borrowingCount: 1,
+    lendingCount: 1,
     messages: [
       {
         id: 'm1', fromMe: false, text: null, isRequestCard: true,
@@ -53,6 +59,31 @@ const threadStore: Thread[] = [
       { id: 'm5', fromMe: false, text: 'So official lol' },
       { id: 'm6', fromMe: true, text: 'Honestly same when I got yours for Song of Achilles haha.' },
       { id: 'm7', fromMe: false, text: "Speaking of… I'm like 3 chapters in and already emotionally unstable." },
+    ],
+  },
+  {
+    id: '2',
+    neighborId: 'priya',
+    neighborName: 'Priya Okonkwo',
+    lastUpdated: NOW - 60 * 60 * 1000,
+    borrowingCount: 0,
+    lendingCount: 1,
+    messages: [
+      { id: 'm1', fromMe: false, text: 'Hey! Is Kindred still available to borrow?' },
+      { id: 'm2', fromMe: true, text: 'Yes! You can pick it up anytime this week.' },
+      { id: 'm3', fromMe: false, text: 'Sounds good! I can leave it on my stoop tomorrow morning.' },
+    ],
+  },
+  {
+    id: '3',
+    neighborId: 'marcus',
+    neighborName: 'Marcus Lee',
+    lastUpdated: NOW - 26 * 60 * 60 * 1000,
+    borrowingCount: 1,
+    lendingCount: 0,
+    messages: [
+      { id: 'm1', fromMe: true, text: "Hey Marcus, I finished Dune! Dropping it off this weekend?" },
+      { id: 'm2', fromMe: false, text: 'No worries at all, take your time with it.' },
     ],
   },
 ];
