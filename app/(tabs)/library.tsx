@@ -1,0 +1,187 @@
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Colors, Shadow, Radius } from '../../constants/theme';
+
+type BookStatus = 'in-library' | 'on-loan' | 'overdue';
+
+const BOOKS: { id: string; title: string; author: string; status: BookStatus; dueDate?: string }[] = [
+  { id: '1', title: 'Piranesi', author: 'Susanna Clarke', status: 'on-loan', dueDate: 'Mar 24' },
+  { id: '2', title: 'The Remains of the Day', author: 'Kazuo Ishiguro', status: 'overdue', dueDate: 'Mar 1' },
+  { id: '3', title: 'Dune', author: 'Frank Herbert', status: 'in-library' },
+  { id: '4', title: 'Kindred', author: 'Octavia Butler', status: 'in-library' },
+  { id: '5', title: 'Convenience Store Woman', author: 'Sayaka Murata', status: 'in-library' },
+  { id: '6', title: 'Giovanni\'s Room', author: 'James Baldwin', status: 'in-library' },
+];
+
+const STATUS_CONFIG = {
+  'in-library': { label: 'In Library', color: Colors.teal },
+  'on-loan': { label: 'On Loan', color: Colors.purple },
+  'overdue': { label: 'Overdue', color: '#C0392B' },
+};
+
+export default function LibraryScreen() {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.heading}>Your Library</Text>
+          <TouchableOpacity style={[styles.addButton, Shadow]}>
+            <MaterialIcons name="add" size={18} color={Colors.white} />
+            <Text style={styles.addButtonText}>Add Book</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.stats}>
+          <View style={[styles.statCard, Shadow]}>
+            <Text style={styles.statNumber}>{BOOKS.length}</Text>
+            <Text style={styles.statLabel}>Books</Text>
+          </View>
+          <View style={[styles.statCard, Shadow]}>
+            <Text style={styles.statNumber}>{BOOKS.filter(b => b.status === 'on-loan' || b.status === 'overdue').length}</Text>
+            <Text style={styles.statLabel}>On Loan</Text>
+          </View>
+          <View style={[styles.statCard, Shadow]}>
+            <Text style={styles.statNumber}>3</Text>
+            <Text style={styles.statLabel}>Lent Out</Text>
+          </View>
+        </View>
+
+        {BOOKS.map((book) => {
+          const status = STATUS_CONFIG[book.status];
+          return (
+            <TouchableOpacity
+              key={book.id}
+              style={[styles.card, Shadow]}
+              onPress={() => router.push(`/book/${book.id}`)}
+            >
+              <View style={styles.coverPlaceholder} />
+              <View style={styles.cardInfo}>
+                <Text style={styles.bookTitle}>{book.title}</Text>
+                <Text style={styles.bookAuthor}>{book.author}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: status.color }]}>
+                  <Text style={styles.statusText}>{status.label}</Text>
+                  {book.dueDate && (
+                    <Text style={styles.dueDateText}> · {book.dueDate}</Text>
+                  )}
+                </View>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={Colors.gray} />
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
+  content: { padding: 16, paddingBottom: 32 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.black,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.teal,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    borderRadius: Radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  addButtonText: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  stats: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    borderRadius: Radius.card,
+    backgroundColor: Colors.white,
+    padding: 12,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: Colors.black,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: Colors.gray,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  card: {
+    flexDirection: 'row',
+    borderWidth: 2,
+    borderColor: Colors.black,
+    borderRadius: Radius.card,
+    backgroundColor: Colors.white,
+    padding: 10,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  coverPlaceholder: {
+    width: 60,
+    height: 80,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    backgroundColor: Colors.lightGray,
+    marginRight: 12,
+  },
+  cardInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  bookTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.black,
+  },
+  bookAuthor: {
+    fontSize: 12,
+    color: Colors.gray,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    borderRadius: Radius.pill,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginTop: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  dueDateText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.white,
+    opacity: 0.85,
+  },
+});
