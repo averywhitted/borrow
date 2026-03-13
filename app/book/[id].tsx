@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
+import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
 
 const LENDERS = [
   { id: '1', name: 'Jaydon Workman', books: 12, borrows: 8, lends: 14, distance: '0.3 mi', available: true },
@@ -21,6 +22,7 @@ const BOOKS: Record<string, { title: string; author: string; genre: string; desc
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const book = BOOKS[id] ?? BOOKS['2'];
+  const saved = useIsWishlisted(id);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -86,9 +88,15 @@ export default function BookDetailScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* Bottom bar: bookmark (secondary) + request CTA (primary) */}
       <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.bookmarkButton, saved && styles.bookmarkButtonSaved, Shadow]}
+          onPress={() => toggleWishlist({ id, title: book.title, author: book.author })}
+        >
+          <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? Colors.white : Colors.black} />
+        </TouchableOpacity>
         <TouchableOpacity style={[styles.borrowButton, Shadow]}>
-          <MaterialIcons name="bookmark-add" size={20} color={Colors.white} />
           <Text style={styles.borrowButtonText}>Request to Borrow</Text>
         </TouchableOpacity>
       </View>
@@ -104,52 +112,32 @@ const styles = StyleSheet.create({
   bookHeader: { flexDirection: 'row', gap: 16, marginBottom: 16 },
   bookMeta: { flex: 1, justifyContent: 'center', gap: 8 },
   genrePill: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    alignSelf: 'flex-start', borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 3,
     backgroundColor: Colors.white,
   },
   genreText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   bookTitle: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   bookAuthor: { fontSize: 14, fontFamily: Font.regular, color: Colors.gray },
   descriptionCard: {
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 14,
-    marginBottom: 20,
-    gap: 8,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 14, marginBottom: 20, gap: 8,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    fontFamily: Font.extraBold,
-    color: Colors.gray,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
+    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
   },
   description: { fontSize: 14, fontFamily: Font.regular, color: Colors.black, lineHeight: 21 },
   lendersSectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    fontFamily: Font.extraBold,
-    color: Colors.black,
-    marginBottom: 12,
+    fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold,
+    color: Colors.black, marginBottom: 12,
   },
   lenderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 12,
-    marginBottom: 10,
-    gap: 12,
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 12, marginBottom: 10, gap: 12,
   },
   lenderInfo: { flex: 1, gap: 3 },
   lenderName: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
@@ -159,42 +147,34 @@ const styles = StyleSheet.create({
   lenderStat: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
   lenderStatDot: { fontSize: 11, color: Colors.lightGray },
   requestButton: {
-    backgroundColor: Colors.purple,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,
   },
   requestButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
   unavailablePill: {
-    borderWidth: 1,
-    borderColor: Colors.lightGray,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    borderWidth: 1, borderColor: Colors.lightGray,
+    borderRadius: Radius.pill, paddingHorizontal: 12, paddingVertical: 7,
   },
   unavailableText: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.black,
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', gap: 10,
+    padding: 16, backgroundColor: Colors.white,
+    borderTopWidth: 1, borderTopColor: Colors.black,
+  },
+  bookmarkButton: {
+    width: 50, height: 50,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+  },
+  bookmarkButtonSaved: {
+    backgroundColor: Colors.teal,
   },
   borrowButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.purple,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    paddingVertical: 14,
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, paddingVertical: 14,
   },
   borrowButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
 });

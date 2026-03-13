@@ -3,6 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
+import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
 
 const GENRES = ['Fantasy', 'Sci-Fi', 'Mystery', 'LGBTQ+', 'Horror', 'Romance'];
 
@@ -16,6 +17,25 @@ const BOOKS = [
   { id: '7', title: 'The Stand', author: 'Stephen King', nearby: 8 },
   { id: '8', title: 'Jane Eyre', author: 'Charlotte Brontë', nearby: 9 },
 ];
+
+function BookmarkButton({ book }: { book: typeof BOOKS[number] }) {
+  const saved = useIsWishlisted(book.id);
+  return (
+    <TouchableOpacity
+      style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, Shadow]}
+      onPress={(e) => {
+        e.stopPropagation();
+        toggleWishlist({ id: book.id, title: book.title, author: book.author, nearbyCount: book.nearby });
+      }}
+    >
+      <MaterialIcons
+        name={saved ? 'bookmark' : 'bookmark-outline'}
+        size={20}
+        color={saved ? Colors.white : Colors.white}
+      />
+    </TouchableOpacity>
+  );
+}
 
 export default function HomeScreen() {
   return (
@@ -62,10 +82,11 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.cardActions}>
-              <TouchableOpacity style={[styles.borrowButton, Shadow]}>
-                <MaterialIcons name="bookmark-add" size={20} color={Colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.moreButton, Shadow]}>
+              <BookmarkButton book={book} />
+              <TouchableOpacity
+                style={[styles.moreButton, Shadow]}
+                onPress={(e) => { e.stopPropagation(); router.push(`/book/${book.id}`); }}
+              >
                 <MaterialIcons name="more-horiz" size={20} color={Colors.black} />
               </TouchableOpacity>
             </View>
@@ -81,106 +102,57 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, paddingBottom: 32 },
   heading: {
-    fontSize: 24,
-    fontWeight: '800',
-    fontFamily: Font.extraBold,
-    color: Colors.black,
-    marginBottom: 12,
+    fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold,
+    color: Colors.black, marginBottom: 12,
   },
   searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 14,
   },
-  searchPlaceholder: {
-    color: Colors.gray,
-    fontSize: 14,
-    fontFamily: Font.regular,
-  },
+  searchPlaceholder: { color: Colors.gray, fontSize: 14, fontFamily: Font.regular },
   genreRow: { marginBottom: 8 },
   genreRowContent: { paddingBottom: 10, paddingRight: 16 },
   genrePill: {
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.white,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginRight: 8,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.pill, backgroundColor: Colors.white,
+    paddingHorizontal: 14, paddingVertical: 10, marginRight: 8,
   },
-  genreText: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: Font.bold,
-    color: Colors.black,
-  },
+  genreText: { fontSize: 13, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
   card: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 10,
-    marginBottom: 12,
-    alignItems: 'center',
-    gap: 10,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 10, marginBottom: 12, alignItems: 'center', gap: 10,
   },
   cardInfo: { flex: 1 },
   badge: {
-    backgroundColor: Colors.lightGray,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
+    backgroundColor: Colors.lightGray, borderRadius: Radius.pill,
+    paddingHorizontal: 8, paddingVertical: 2,
+    alignSelf: 'flex-start', marginBottom: 4,
   },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    fontFamily: Font.bold,
-    color: Colors.gray,
-  },
-  bookTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: Font.bold,
-    color: Colors.black,
-    marginBottom: 2,
-  },
-  bookAuthor: {
-    fontSize: 12,
-    fontFamily: Font.regular,
-    color: Colors.gray,
-    marginBottom: 4,
-  },
+  badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.gray },
+  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black, marginBottom: 2 },
+  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray, marginBottom: 4 },
   nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   bookNearby: { fontSize: 11, color: Colors.gray, fontFamily: Font.regular },
   cardActions: { gap: 8, alignItems: 'center' },
-  borrowButton: {
-    width: 90,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  wishlistButton: {
+    width: 90, height: 40,
+    alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.purple,
-    borderWidth: 1,
-    borderColor: Colors.black,
+    borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card,
   },
+  wishlistButtonSaved: {
+    backgroundColor: Colors.teal,
+  },
   moreButton: {
-    width: 90,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 90, height: 40,
+    alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.lightGray,
-    borderWidth: 1,
-    borderColor: Colors.black,
+    borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card,
   },
 });
