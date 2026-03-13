@@ -26,7 +26,7 @@ export default function LibraryScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.heading}>Your Library</Text>
-          <TouchableOpacity style={[styles.addButton, Shadow]}>
+          <TouchableOpacity style={[styles.addButton, Shadow]} onPress={() => router.push('/add-book')}>
             <MaterialIcons name="add" size={18} color={Colors.white} />
             <Text style={styles.addButtonText}>Add Book</Text>
           </TouchableOpacity>
