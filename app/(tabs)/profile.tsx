@@ -7,25 +7,31 @@ import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
 import { useWishlist, removeFromWishlist } from '../../store/wishlist';
 
+const CHIP_COLORS: Record<string, string> = {
+  all:       Colors.teal,
+  borrowing: Colors.teal,
+  lending:   Colors.purple,
+};
+
 const STAT_FILTERS = [
-  { key: 'all', label: 'Books', value: 6 },
+  { key: 'all',       label: 'Books',     value: 6 },
   { key: 'borrowing', label: 'Borrowing', value: 4 },
-  { key: 'lending', label: 'Lending', value: 3 },
+  { key: 'lending',   label: 'Lending',   value: 3 },
 ] as const;
 
 type FilterKey = typeof STAT_FILTERS[number]['key'];
 
 const RECENT = [
-  { id: '1', title: 'Piranesi', author: 'Susanna Clarke', status: 'Lent Out', type: 'lending' as const },
+  { id: '1', title: 'Piranesi', author: 'Susanna Clarke', status: 'Lending', type: 'lending' as const },
   { id: '2', title: 'Dune', author: 'Frank Herbert', status: 'In Library', type: 'all' as const },
-  { id: '3', title: 'Kindred', author: 'Octavia Butler', status: 'Borrowed', type: 'borrowing' as const },
-  { id: '4', title: 'Normal People', author: 'Sally Rooney', status: 'Lent Out', type: 'lending' as const },
-  { id: '5', title: 'The Secret History', author: 'Donna Tartt', status: 'Borrowed', type: 'borrowing' as const },
+  { id: '3', title: 'Kindred', author: 'Octavia Butler', status: 'Borrowing', type: 'borrowing' as const },
+  { id: '4', title: 'Normal People', author: 'Sally Rooney', status: 'Lending', type: 'lending' as const },
+  { id: '5', title: 'The Secret History', author: 'Donna Tartt', status: 'Borrowing', type: 'borrowing' as const },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  'Lent Out': Colors.purple,
-  'Borrowed': Colors.teal,
+  'Lending':    Colors.purple,
+  'Borrowing':  Colors.teal,
   'In Library': '#888',
 };
 
@@ -63,20 +69,24 @@ export default function ProfileScreen() {
 
         {/* Filter chips — tap to filter activity below */}
         <View style={styles.statsRow}>
-          {STAT_FILTERS.map((stat) => (
-            <TouchableOpacity
-              key={stat.key}
-              style={[styles.statChip, activeFilter === stat.key && styles.statChipActive, Shadow]}
-              onPress={() => setActiveFilter(stat.key)}
-            >
-              <Text style={[styles.statValue, activeFilter === stat.key && styles.statValueActive]}>
-                {stat.value}
-              </Text>
-              <Text style={[styles.statLabel, activeFilter === stat.key && styles.statLabelActive]}>
-                {stat.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {STAT_FILTERS.map((stat) => {
+            const active = activeFilter === stat.key;
+            const color = CHIP_COLORS[stat.key];
+            return (
+              <TouchableOpacity
+                key={stat.key}
+                style={[styles.statChip, { borderColor: color, backgroundColor: active ? color : Colors.white }, Shadow]}
+                onPress={() => setActiveFilter(stat.key)}
+              >
+                <Text style={[styles.statValue, { color: active ? Colors.white : color }]}>
+                  {stat.value}
+                </Text>
+                <Text style={[styles.statLabel, { color: active ? Colors.white : color }]}>
+                  {stat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Wishlist section */}
@@ -201,15 +211,12 @@ const styles = StyleSheet.create({
   // Stat filter chips
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24, paddingBottom: 4 },
   statChip: {
-    flex: 1, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    flex: 1, borderWidth: 1.5,
+    borderRadius: Radius.card,
     padding: 12, alignItems: 'center',
   },
-  statChipActive: { backgroundColor: '#333' },
-  statValue: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  statValueActive: { color: Colors.white },
-  statLabel: { fontSize: 11, fontFamily: Font.bold, color: Colors.gray, fontWeight: '600', marginTop: 2 },
-  statLabelActive: { color: Colors.lightGray },
+  statValue: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold },
+  statLabel: { fontSize: 11, fontFamily: Font.bold, fontWeight: '600', marginTop: 2 },
 
   // Section headers
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
