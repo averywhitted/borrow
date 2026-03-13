@@ -23,8 +23,15 @@ export default function ThreadScreen() {
   if (!thread) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontFamily: Font.regular, color: Colors.gray }}>Thread not found.</Text>
+        <View style={styles.notFoundHeader}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.black} />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+          <MaterialIcons name="chat-bubble-outline" size={40} color={Colors.lightGray} />
+          <Text style={{ fontFamily: Font.bold, color: Colors.gray, fontSize: 14 }}>No messages yet</Text>
+          <Text style={{ fontFamily: Font.regular, color: Colors.gray, fontSize: 12 }}>This conversation hasn't started.</Text>
         </View>
       </SafeAreaView>
     );
@@ -187,6 +194,10 @@ const SEND_BTN = 36;
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
+  notFoundHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.black,
+  },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.black,
