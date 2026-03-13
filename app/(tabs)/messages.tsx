@@ -2,6 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } fr
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { Avatar } from '../../components/Avatar';
 
 const INBOX = [
   { id: '1', name: 'Jaydon Workman', preview: "Speaking of… I'm like 3 chapters in and already emotionally unstable.", time: '2m ago', unread: true, borrowing: 1, lending: 1 },
@@ -50,7 +51,7 @@ export default function MessagesScreen() {
                   style={[styles.row, Shadow]}
                   onPress={() => router.push(`/thread/${convo.id}`)}
                 >
-                  <View style={styles.avatar} />
+                  <Avatar name={convo.name} size={44} />
                   <View style={styles.rowInfo}>
                     <View style={styles.rowTop}>
                       <Text style={[styles.rowName, convo.unread && styles.rowNameUnread]}>{convo.name}</Text>
@@ -68,7 +69,7 @@ export default function MessagesScreen() {
                   style={[styles.row, Shadow]}
                   onPress={() => router.push(`/thread/${req.id}`)}
                 >
-                  <View style={styles.avatar} />
+                  <Avatar name={req.name} size={44} />
                   <View style={styles.rowInfo}>
                     <View style={styles.rowTop}>
                       <Text style={styles.rowName}>{req.name}</Text>
@@ -137,14 +138,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     padding: 12,
     gap: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    backgroundColor: Colors.lightGray,
   },
   rowInfo: { flex: 1, gap: 3 },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

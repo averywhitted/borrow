@@ -3,6 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
+import { Avatar } from '../../components/Avatar';
 
 const LENDERS = [
   { id: '1', name: 'Jaydon Workman', books: 12, borrows: 8, lends: 14, distance: '0.3 mi', available: true },
@@ -50,7 +51,7 @@ export default function BookDetailScreen() {
 
         {LENDERS.map((lender) => (
           <View key={lender.id} style={styles.lenderCard}>
-            <View style={styles.lenderAvatar} />
+            <Avatar name={lender.name} size={44} />
             <View style={styles.lenderInfo}>
               <Text style={styles.lenderName}>{lender.name}</Text>
               <View style={styles.lenderMeta}>
@@ -68,7 +69,9 @@ export default function BookDetailScreen() {
             {lender.available ? (
               <TouchableOpacity
                 style={[styles.requestButton, Shadow]}
-                onPress={() => router.push(`/borrow-request/${lender.id}`)}
+                onPress={() => router.push(
+                  `/borrow-request/${lender.id}?bookTitle=${encodeURIComponent(book.title)}&bookAuthor=${encodeURIComponent(book.author)}`
+                )}
               >
                 <Text style={styles.requestButtonText}>Request</Text>
               </TouchableOpacity>
@@ -148,14 +151,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 12,
   },
-  lenderAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    backgroundColor: Colors.lightGray,
-  },
   lenderInfo: { flex: 1, gap: 3 },
   lenderName: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   lenderMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
@@ -167,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.purple,
     borderWidth: 1,
     borderColor: Colors.black,
-    borderRadius: Radius.pill,
+    borderRadius: Radius.card,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
@@ -198,7 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.purple,
     borderWidth: 1,
     borderColor: Colors.black,
-    borderRadius: Radius.pill,
+    borderRadius: Radius.card,
     paddingVertical: 14,
   },
   borrowButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },

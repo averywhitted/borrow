@@ -7,6 +7,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { WheelPicker } from '../../components/WheelPicker';
+import { Avatar } from '../../components/Avatar';
+import { getOrCreateThread, addBorrowRequest } from '../../store/threads';
 
 const LENDERS: Record<string, { name: string; distance: string }> = {
   '1': { name: 'Jaydon Workman', distance: '0.3 mi' },
@@ -26,39 +28,40 @@ function generateDates(count: number): string[] {
 }
 
 export default function BorrowRequestScreen() {
-  const { lenderId } = useLocalSearchParams<{ lenderId: string }>();
-  const lender = LENDERS[lenderId] ?? { name: 'Neighbor', distance: '—' };
+  const { lenderId, bookTitle, bookAuthor } = useLocalSearchParams<{
+    lenderId: string;
+    bookTitle?: string;
+    bookAuthor?: string;
+  }>();
 
+  const lender = LENDERS[lenderId] ?? { name: 'Neighbor', distance: '—' };
   const dates = useMemo(() => generateDates(90), []);
 
   const [fromIndex, setFromIndex] = useState(0);
   const [untilIndex, setUntilIndex] = useState(14);
   const [note, setNote] = useState('');
-  const [sent, setSent] = useState(false);
 
   const handleFromChange = (i: number) => {
     setFromIndex(i);
     if (untilIndex <= i + 6) setUntilIndex(i + 14);
   };
 
-  if (sent) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.successScreen}>
-          <View style={[styles.successIcon, Shadow]}>
-            <MaterialIcons name="send" size={32} color={Colors.white} />
-          </View>
-          <Text style={styles.successTitle}>Request Sent!</Text>
-          <Text style={styles.successSubtitle}>
-            <Text style={{ fontFamily: Font.extraBold }}>{lender.name}</Text> will get back to you soon.
-          </Text>
-          <TouchableOpacity style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const handleSend = () => {
+    const thread = getOrCreateThread(lenderId, lender.name);
+    addBorrowRequest(thread, {
+      id: `req_${Date.now()}`,
+      fromName: 'Avery Whitted',
+      bookTitle: bookTitle ?? 'Unknown Book',
+      bookAuthor: bookAuthor,
+      fromDate: dates[fromIndex],
+      untilDate: dates[untilIndex],
+      note: note.trim() || undefined,
+      status: 'pending',
+    });
+    // Close modal and navigate to the thread
+    router.back();
+    router.push(`/thread/${thread.id}`);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -72,7 +75,7 @@ export default function BorrowRequestScreen() {
 
         {/* Lender card */}
         <View style={styles.lenderCard}>
-          <View style={styles.lenderAvatar} />
+          <Avatar name={lender.name} size={44} />
           <View style={styles.lenderInfo}>
             <Text style={styles.lenderName}>{lender.name}</Text>
             <View style={styles.lenderMeta}>
@@ -80,7 +83,11 @@ export default function BorrowRequestScreen() {
               <Text style={styles.lenderDistance}>{lender.distance} away</Text>
             </View>
           </View>
-          <View style={styles.bookCoverSmall} />
+          {bookTitle && (
+            <View style={styles.bookCoverSmall}>
+              <Text style={styles.bookCoverText} numberOfLines={3}>{bookTitle}</Text>
+            </View>
+          )}
         </View>
 
         {/* Wheel date picker */}
@@ -122,7 +129,7 @@ export default function BorrowRequestScreen() {
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={[styles.sendButton, Shadow]} onPress={() => setSent(true)}>
+        <TouchableOpacity style={[styles.sendButton, Shadow]} onPress={handleSend}>
           <MaterialIcons name="send" size={20} color={Colors.white} />
           <Text style={styles.sendButtonText}>Send Request</Text>
         </TouchableOpacity>
@@ -145,10 +152,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card, backgroundColor: Colors.white,
     padding: 12, gap: 12, marginBottom: 20,
   },
-  lenderAvatar: {
-    width: 44, height: 44, borderRadius: 22,
-    borderWidth: 1, borderColor: Colors.black, backgroundColor: Colors.lightGray,
-  },
   lenderInfo: { flex: 1, gap: 3 },
   lenderName: { fontSize: 15, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   lenderMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
@@ -156,7 +159,9 @@ const styles = StyleSheet.create({
   bookCoverSmall: {
     width: 40, height: 55, borderRadius: 6,
     borderWidth: 1, borderColor: Colors.black, backgroundColor: Colors.teal,
+    justifyContent: 'flex-end', padding: 3,
   },
+  bookCoverText: { fontSize: 7, color: 'rgba(255,255,255,0.9)', fontFamily: Font.bold },
   datePickerCard: {
     flexDirection: 'row',
     borderWidth: 1, borderColor: Colors.black,
@@ -191,25 +196,7 @@ const styles = StyleSheet.create({
   sendButton: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, paddingVertical: 14,
+    borderRadius: Radius.card, paddingVertical: 14,
   },
   sendButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
-  successScreen: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16,
-  },
-  successIcon: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  successTitle: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  successSubtitle: {
-    fontSize: 14, fontFamily: Font.regular,
-    color: Colors.gray, textAlign: 'center', lineHeight: 21,
-  },
-  doneButton: {
-    backgroundColor: Colors.black, borderRadius: Radius.pill,
-    paddingHorizontal: 40, paddingVertical: 14, marginTop: 8,
-  },
-  doneButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
 });

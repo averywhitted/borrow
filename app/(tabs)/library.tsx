@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.teal,
     borderWidth: 1,
     borderColor: Colors.black,
-    borderRadius: Radius.pill,
+    borderRadius: Radius.card,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },

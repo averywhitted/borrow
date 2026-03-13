@@ -63,11 +63,10 @@ export default function HomeScreen() {
             </View>
             <View style={styles.cardActions}>
               <TouchableOpacity style={[styles.borrowButton, Shadow]}>
-                <MaterialIcons name="bookmark-add" size={16} color={Colors.white} />
-                <Text style={styles.borrowButtonText}>Borrow</Text>
+                <MaterialIcons name="bookmark-add" size={20} color={Colors.white} />
               </TouchableOpacity>
               <TouchableOpacity style={[styles.moreButton, Shadow]}>
-                <Text style={styles.moreButtonText}>···</Text>
+                <MaterialIcons name="more-horiz" size={20} color={Colors.black} />
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -163,38 +162,25 @@ const styles = StyleSheet.create({
   },
   nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   bookNearby: { fontSize: 11, color: Colors.gray, fontFamily: Font.regular },
-  cardActions: { gap: 8, alignItems: 'stretch' },
+  cardActions: { gap: 8, alignItems: 'center' },
   borrowButton: {
-    flexDirection: 'row',
+    width: 90,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
     backgroundColor: Colors.purple,
     borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  borrowButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontFamily: Font.bold,
-    fontSize: 13,
   },
   moreButton: {
+    width: 90,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.lightGray,
     borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    alignItems: 'center',
-  },
-  moreButtonText: {
-    color: Colors.black,
-    fontWeight: '700',
-    fontSize: 14,
-    fontFamily: Font.bold,
   },
 });

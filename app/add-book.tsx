@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, paddingVertical: 14,
+    borderRadius: Radius.card, paddingVertical: 14,
   },
   addButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
   successScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   successSubtitle: { fontSize: 14, fontFamily: Font.regular, color: Colors.gray, textAlign: 'center', lineHeight: 21 },
   doneButton: {
     backgroundColor: Colors.black, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, paddingHorizontal: 40, paddingVertical: 14, marginTop: 8,
+    borderRadius: Radius.card, paddingHorizontal: 40, paddingVertical: 14, marginTop: 8,
   },
   doneButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
   addAnotherText: { fontSize: 13, fontWeight: '600', fontFamily: Font.bold, color: Colors.teal },
