@@ -8,6 +8,7 @@ export const Colors = {
   background: '#FFFFFF',
 };
 
+// Only apply to interactive button elements (TouchableOpacity), not cards/containers
 export const Shadow = {
   shadowColor: '#000000',
   shadowOffset: { width: 4, height: 4 },
@@ -19,4 +20,10 @@ export const Shadow = {
 export const Radius = {
   card: 10,
   pill: 999,
+};
+
+export const Font = {
+  regular: 'JetBrainsMono_400Regular',
+  bold: 'JetBrainsMono_700Bold',
+  extraBold: 'JetBrainsMono_800ExtraBold',
 };

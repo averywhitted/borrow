@@ -1,7 +1,8 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { BookCover } from '../../components/BookCover';
 
 type BookStatus = 'in-library' | 'on-loan' | 'overdue';
 
@@ -11,7 +12,7 @@ const BOOKS: { id: string; title: string; author: string; status: BookStatus; du
   { id: '3', title: 'Dune', author: 'Frank Herbert', status: 'in-library' },
   { id: '4', title: 'Kindred', author: 'Octavia Butler', status: 'in-library' },
   { id: '5', title: 'Convenience Store Woman', author: 'Sayaka Murata', status: 'in-library' },
-  { id: '6', title: 'Giovanni\'s Room', author: 'James Baldwin', status: 'in-library' },
+  { id: '6', title: "Giovanni's Room", author: 'James Baldwin', status: 'in-library' },
 ];
 
 const STATUS_CONFIG = {
@@ -33,15 +34,15 @@ export default function LibraryScreen() {
         </View>
 
         <View style={styles.stats}>
-          <View style={[styles.statCard, Shadow]}>
+          <View style={styles.statCard}>
             <Text style={styles.statNumber}>{BOOKS.length}</Text>
             <Text style={styles.statLabel}>Books</Text>
           </View>
-          <View style={[styles.statCard, Shadow]}>
+          <View style={styles.statCard}>
             <Text style={styles.statNumber}>{BOOKS.filter(b => b.status === 'on-loan' || b.status === 'overdue').length}</Text>
             <Text style={styles.statLabel}>On Loan</Text>
           </View>
-          <View style={[styles.statCard, Shadow]}>
+          <View style={styles.statCard}>
             <Text style={styles.statNumber}>3</Text>
             <Text style={styles.statLabel}>Lent Out</Text>
           </View>
@@ -55,7 +56,7 @@ export default function LibraryScreen() {
               style={[styles.card, Shadow]}
               onPress={() => router.push(`/book/${book.id}`)}
             >
-              <View style={styles.coverPlaceholder} />
+              <BookCover title={book.title} author={book.author} width={60} height={80} />
               <View style={styles.cardInfo}>
                 <Text style={styles.bookTitle}>{book.title}</Text>
                 <Text style={styles.bookAuthor}>{book.author}</Text>
@@ -85,103 +86,55 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  heading: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.black,
-  },
+  heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: Colors.teal,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.pill,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  addButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  stats: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
+  addButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
+  stats: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   statCard: {
     flex: 1,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
     padding: 12,
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: Colors.black,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: Colors.gray,
-    fontWeight: '600',
-    marginTop: 2,
-  },
+  statNumber: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  statLabel: { fontSize: 11, fontFamily: Font.bold, color: Colors.gray, fontWeight: '600', marginTop: 2 },
   card: {
     flexDirection: 'row',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
     padding: 10,
     marginBottom: 12,
     alignItems: 'center',
+    gap: 12,
   },
-  coverPlaceholder: {
-    width: 60,
-    height: 80,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    backgroundColor: Colors.lightGray,
-    marginRight: 12,
-  },
-  cardInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  bookTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.black,
-  },
-  bookAuthor: {
-    fontSize: 12,
-    color: Colors.gray,
-  },
+  cardInfo: { flex: 1, gap: 4 },
+  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
   statusBadge: {
     flexDirection: 'row',
     alignSelf: 'flex-start',
     borderRadius: Radius.pill,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     paddingHorizontal: 10,
     paddingVertical: 3,
     marginTop: 4,
   },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.white,
-  },
-  dueDateText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.white,
-    opacity: 0.85,
-  },
+  statusText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  dueDateText: { fontSize: 11, fontFamily: Font.regular, color: Colors.white, opacity: 0.85 },
 });

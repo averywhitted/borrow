@@ -1,16 +1,12 @@
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
+  View, Text, TextInput, TouchableOpacity,
+  ScrollView, StyleSheet, SafeAreaView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Colors, Shadow, Radius } from '../../constants/theme';
+import { useState, useMemo } from 'react';
+import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { WheelPicker } from '../../components/WheelPicker';
 
 const LENDERS: Record<string, { name: string; distance: string }> = {
   '1': { name: 'Jaydon Workman', distance: '0.3 mi' },
@@ -18,42 +14,32 @@ const LENDERS: Record<string, { name: string; distance: string }> = {
   '4': { name: 'Sasha Volkov', distance: '1.4 mi' },
 };
 
-const START_OPTIONS = ['Today', 'Tomorrow', 'This weekend'];
-const DURATIONS = ['1 week', '2 weeks', '3 weeks', '4 weeks'];
-
-function addDays(base: string, days: number): string {
-  const d = new Date();
-  if (base === 'Tomorrow') d.setDate(d.getDate() + 1);
-  else if (base === 'This weekend') {
-    const day = d.getDay();
-    d.setDate(d.getDate() + ((6 - day + 7) % 7 || 7));
+function generateDates(count: number): string[] {
+  const dates: string[] = [];
+  const base = new Date();
+  for (let i = 0; i < count; i++) {
+    const d = new Date(base);
+    d.setDate(base.getDate() + i);
+    dates.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
   }
-  d.setDate(d.getDate() + days);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function getStartDate(base: string): string {
-  const d = new Date();
-  if (base === 'Tomorrow') d.setDate(d.getDate() + 1);
-  else if (base === 'This weekend') {
-    const day = d.getDay();
-    d.setDate(d.getDate() + ((6 - day + 7) % 7 || 7));
-  }
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return dates;
 }
 
 export default function BorrowRequestScreen() {
   const { lenderId } = useLocalSearchParams<{ lenderId: string }>();
   const lender = LENDERS[lenderId] ?? { name: 'Neighbor', distance: '—' };
 
-  const [startOption, setStartOption] = useState('Today');
-  const [duration, setDuration] = useState('2 weeks');
+  const dates = useMemo(() => generateDates(90), []);
+
+  const [fromIndex, setFromIndex] = useState(0);
+  const [untilIndex, setUntilIndex] = useState(14);
   const [note, setNote] = useState('');
   const [sent, setSent] = useState(false);
 
-  const durationDays = parseInt(duration) * 7;
-  const startLabel = getStartDate(startOption);
-  const endLabel = addDays(startOption, durationDays);
+  const handleFromChange = (i: number) => {
+    setFromIndex(i);
+    if (untilIndex <= i + 6) setUntilIndex(i + 14);
+  };
 
   if (sent) {
     return (
@@ -64,7 +50,7 @@ export default function BorrowRequestScreen() {
           </View>
           <Text style={styles.successTitle}>Request Sent!</Text>
           <Text style={styles.successSubtitle}>
-            <Text style={{ fontWeight: '800' }}>{lender.name}</Text> will get back to you soon. You'll get a notification when they respond.
+            <Text style={{ fontFamily: Font.extraBold }}>{lender.name}</Text> will get back to you soon.
           </Text>
           <TouchableOpacity style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
             <Text style={styles.doneButtonText}>Done</Text>
@@ -84,7 +70,8 @@ export default function BorrowRequestScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.lenderCard, Shadow]}>
+        {/* Lender card */}
+        <View style={styles.lenderCard}>
           <View style={styles.lenderAvatar} />
           <View style={styles.lenderInfo}>
             <Text style={styles.lenderName}>{lender.name}</Text>
@@ -93,53 +80,33 @@ export default function BorrowRequestScreen() {
               <Text style={styles.lenderDistance}>{lender.distance} away</Text>
             </View>
           </View>
-          <View style={[styles.bookCoverSmall, Shadow]} />
+          <View style={styles.bookCoverSmall} />
         </View>
 
-        <View style={[styles.dateRangeCard, Shadow]}>
-          <View style={styles.dateBox}>
-            <Text style={styles.dateBoxLabel}>From</Text>
-            <Text style={styles.dateBoxValue}>{startLabel}</Text>
+        {/* Wheel date picker */}
+        <View style={styles.datePickerCard}>
+          <View style={styles.datePickerColumn}>
+            <Text style={styles.datePickerLabel}>From</Text>
+            <WheelPicker
+              items={dates}
+              selectedIndex={fromIndex}
+              onSelect={handleFromChange}
+            />
           </View>
-          <MaterialIcons name="arrow-forward" size={20} color={Colors.white} />
-          <View style={styles.dateBox}>
-            <Text style={styles.dateBoxLabel}>Until</Text>
-            <Text style={styles.dateBoxValue}>{endLabel}</Text>
+          <View style={styles.datePickerDivider} />
+          <View style={styles.datePickerColumn}>
+            <Text style={styles.datePickerLabel}>Until</Text>
+            <WheelPicker
+              items={dates}
+              selectedIndex={untilIndex}
+              onSelect={(i) => setUntilIndex(Math.max(fromIndex + 7, i))}
+            />
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>When do you need it?</Text>
-        <View style={styles.optionRow}>
-          {START_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt}
-              style={[styles.optionPill, Shadow, startOption === opt && styles.optionPillActive]}
-              onPress={() => setStartOption(opt)}
-            >
-              <Text style={[styles.optionText, startOption === opt && styles.optionTextActive]}>
-                {opt}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>How long?</Text>
-        <View style={styles.optionRow}>
-          {DURATIONS.map((d) => (
-            <TouchableOpacity
-              key={d}
-              style={[styles.optionPill, Shadow, duration === d && styles.optionPillActive]}
-              onPress={() => setDuration(d)}
-            >
-              <Text style={[styles.optionText, duration === d && styles.optionTextActive]}>
-                {d}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
+        {/* Optional note */}
         <Text style={styles.sectionLabel}>Add a note (optional)</Text>
-        <View style={[styles.noteInput, Shadow]}>
+        <View style={styles.noteInput}>
           <TextInput
             style={styles.noteTextInput}
             placeholder="Hey! I've been wanting to read this for ages..."
@@ -168,144 +135,81 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16 },
   topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 20,
   },
-  heading: { fontSize: 24, fontWeight: '800', color: Colors.black },
+  heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   lenderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 12,
-    gap: 12,
-    marginBottom: 16,
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 12, gap: 12, marginBottom: 20,
   },
   lenderAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    backgroundColor: Colors.lightGray,
+    width: 44, height: 44, borderRadius: 22,
+    borderWidth: 1, borderColor: Colors.black, backgroundColor: Colors.lightGray,
   },
   lenderInfo: { flex: 1, gap: 3 },
-  lenderName: { fontSize: 15, fontWeight: '700', color: Colors.black },
+  lenderName: { fontSize: 15, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   lenderMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  lenderDistance: { fontSize: 12, color: Colors.gray },
+  lenderDistance: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
   bookCoverSmall: {
-    width: 40,
-    height: 55,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    backgroundColor: Colors.teal,
+    width: 40, height: 55, borderRadius: 6,
+    borderWidth: 1, borderColor: Colors.black, backgroundColor: Colors.teal,
   },
-  dateRangeCard: {
+  datePickerCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.black,
-    padding: 16,
-    marginBottom: 24,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.black,
+    marginBottom: 24, overflow: 'hidden',
   },
-  dateBox: { alignItems: 'center', gap: 4 },
-  dateBoxLabel: { fontSize: 11, fontWeight: '600', color: Colors.gray },
-  dateBoxValue: { fontSize: 20, fontWeight: '800', color: Colors.white },
+  datePickerColumn: { flex: 1 },
+  datePickerLabel: {
+    fontSize: 11, fontWeight: '700', fontFamily: Font.bold,
+    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
+    textAlign: 'center', paddingTop: 14, paddingBottom: 4,
+  },
+  datePickerDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.15)' },
   sectionLabel: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: Colors.gray,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 10,
+    fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
+    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10,
   },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  optionPill: {
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Colors.white,
-  },
-  optionPillActive: { backgroundColor: Colors.black },
-  optionText: { fontSize: 13, fontWeight: '600', color: Colors.black },
-  optionTextActive: { color: Colors.white },
   noteInput: {
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.white,
-    padding: 12,
-    marginBottom: 16,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 12, marginBottom: 16,
   },
   noteTextInput: {
-    fontSize: 14,
-    color: Colors.black,
-    minHeight: 80,
-    textAlignVertical: 'top',
+    fontSize: 14, fontFamily: Font.regular,
+    color: Colors.black, minHeight: 80, textAlignVertical: 'top',
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: Colors.white,
-    borderTopWidth: 2,
-    borderTopColor: Colors.black,
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    padding: 16, backgroundColor: Colors.white,
+    borderTopWidth: 1, borderTopColor: Colors.black,
   },
   sendButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.purple,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    paddingVertical: 14,
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.pill, paddingVertical: 14,
   },
-  sendButtonText: { fontSize: 15, fontWeight: '800', color: Colors.white },
+  sendButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
   successScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 16,
+    flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16,
   },
   successIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: Colors.purple,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    justifyContent: 'center', alignItems: 'center',
   },
-  successTitle: { fontSize: 24, fontWeight: '800', color: Colors.black },
+  successTitle: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   successSubtitle: {
-    fontSize: 14,
-    color: Colors.gray,
-    textAlign: 'center',
-    lineHeight: 21,
+    fontSize: 14, fontFamily: Font.regular,
+    color: Colors.gray, textAlign: 'center', lineHeight: 21,
   },
   doneButton: {
-    backgroundColor: Colors.black,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 40,
-    paddingVertical: 14,
-    marginTop: 8,
+    backgroundColor: Colors.black, borderRadius: Radius.pill,
+    paddingHorizontal: 40, paddingVertical: 14, marginTop: 8,
   },
-  doneButtonText: { fontSize: 15, fontWeight: '800', color: Colors.white },
+  doneButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
 });

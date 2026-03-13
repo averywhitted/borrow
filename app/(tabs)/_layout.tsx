@@ -16,10 +16,7 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: Colors.black,
         tabBarInactiveTintColor: Colors.gray,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
+        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen

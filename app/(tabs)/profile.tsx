@@ -1,6 +1,7 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Colors, Shadow, Radius } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { BookCover } from '../../components/BookCover';
 
 const STATS = [
   { label: 'Books', value: 6 },
@@ -19,7 +20,6 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
 
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.heading}>Profile</Text>
           <TouchableOpacity style={[styles.settingsButton, Shadow]}>
@@ -27,14 +27,11 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Avatar + Name */}
         <View style={styles.profileCard}>
-          <View style={[styles.avatar, Shadow]} />
+          <View style={styles.avatar} />
           <View style={styles.profileInfo}>
             <Text style={styles.name}>Avery Whitted</Text>
-            <Text style={styles.location}>
-              <MaterialIcons name="place" size={13} color={Colors.gray} /> Brooklyn, NY
-            </Text>
+            <Text style={styles.location}>Brooklyn, NY</Text>
           </View>
           <TouchableOpacity style={[styles.editButton, Shadow]}>
             <MaterialIcons name="edit" size={16} color={Colors.black} />
@@ -42,21 +39,19 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Stats */}
         <View style={styles.statsRow}>
           {STATS.map((stat) => (
-            <View key={stat.label} style={[styles.statCard, Shadow]}>
+            <View key={stat.label} style={styles.statCard}>
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
           ))}
         </View>
 
-        {/* Recent activity */}
         <Text style={styles.sectionTitle}>Recent Activity</Text>
         {RECENT.map((book) => (
-          <View key={book.id} style={[styles.bookRow, Shadow]}>
-            <View style={styles.coverPlaceholder} />
+          <View key={book.id} style={styles.bookRow}>
+            <BookCover title={book.title} author={book.author} width={44} height={60} />
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{book.title}</Text>
               <Text style={styles.bookAuthor}>{book.author}</Text>
@@ -67,7 +62,6 @@ export default function ProfileScreen() {
           </View>
         ))}
 
-        {/* Settings rows */}
         <Text style={styles.sectionTitle}>Account</Text>
         {['Notifications', 'Privacy', 'Help & Feedback', 'Log Out'].map((item) => (
           <TouchableOpacity key={item} style={[styles.settingsRow, Shadow]}>
@@ -90,9 +84,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  heading: { fontSize: 24, fontWeight: '800', color: Colors.black },
+  heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   settingsButton: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     padding: 8,
@@ -101,53 +95,53 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
     padding: 14,
     marginBottom: 16,
     gap: 12,
-    ...Shadow,
   },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     backgroundColor: Colors.lightGray,
   },
   profileInfo: { flex: 1, gap: 4 },
-  name: { fontSize: 16, fontWeight: '800', color: Colors.black },
-  location: { fontSize: 12, color: Colors.gray },
+  name: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  location: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 6,
     backgroundColor: Colors.white,
   },
-  editButtonText: { fontSize: 12, fontWeight: '700', color: Colors.black },
+  editButtonText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   statCard: {
     flex: 1,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
     padding: 12,
     alignItems: 'center',
   },
-  statValue: { fontSize: 22, fontWeight: '800', color: Colors.black },
-  statLabel: { fontSize: 11, color: Colors.gray, fontWeight: '600', marginTop: 2 },
+  statValue: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  statLabel: { fontSize: 11, fontFamily: Font.bold, color: Colors.gray, fontWeight: '600', marginTop: 2 },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '800',
+    fontFamily: Font.extraBold,
     color: Colors.gray,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -156,7 +150,7 @@ const styles = StyleSheet.create({
   bookRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
@@ -164,30 +158,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 12,
   },
-  coverPlaceholder: {
-    width: 44,
-    height: 60,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    backgroundColor: Colors.lightGray,
-  },
   bookInfo: { flex: 1 },
-  bookTitle: { fontSize: 14, fontWeight: '700', color: Colors.black },
-  bookAuthor: { fontSize: 12, color: Colors.gray, marginTop: 2 },
+  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray, marginTop: 2 },
   statusPill: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  statusText: { fontSize: 11, fontWeight: '700', color: Colors.white },
+  statusText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
   settingsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.black,
     borderRadius: Radius.card,
     backgroundColor: Colors.white,
@@ -195,5 +181,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 10,
   },
-  settingsRowText: { fontSize: 14, fontWeight: '600', color: Colors.black },
+  settingsRowText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
 });
