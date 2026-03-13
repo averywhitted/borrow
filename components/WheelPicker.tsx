@@ -10,14 +10,31 @@ interface Props {
   items: string[];
   selectedIndex: number;
   onSelect: (index: number) => void;
+  /** Color of the month portion (first word) of selected item. Defaults to white. */
+  monthColor?: string;
+  /** Color of the day portion (second word) of selected item. Defaults to white. */
+  dayColor?: string;
+  /** Color of non-selected items. Defaults to rgba(255,255,255,0.3). */
+  dimColor?: string;
+  /** Border color of the selection highlight bar. */
+  indicatorBorder?: string;
+  /** Background color of the selection highlight bar. */
+  indicatorBg?: string;
 }
 
-export function WheelPicker({ items, selectedIndex, onSelect }: Props) {
+export function WheelPicker({
+  items,
+  selectedIndex,
+  onSelect,
+  monthColor,
+  dayColor,
+  dimColor = 'rgba(255, 255, 255, 0.3)',
+  indicatorBorder = 'rgba(255, 255, 255, 0.3)',
+  indicatorBg = 'rgba(255,255,255,0.06)',
+}: Props) {
   const ref = useRef<ScrollView>(null);
-  // Track the "committed" index separately from the live scroll position
   const committedIndex = useRef(selectedIndex);
 
-  // Scroll to initial position once mounted
   useEffect(() => {
     const timer = setTimeout(() => {
       ref.current?.scrollTo({ y: selectedIndex * ITEM_H, animated: false });
@@ -26,7 +43,6 @@ export function WheelPicker({ items, selectedIndex, onSelect }: Props) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Sync when parent drives selectedIndex externally
   useEffect(() => {
     if (selectedIndex !== committedIndex.current) {
       committedIndex.current = selectedIndex;
@@ -39,7 +55,6 @@ export function WheelPicker({ items, selectedIndex, onSelect }: Props) {
       const y = e.nativeEvent.contentOffset.y;
       const idx = Math.round(y / ITEM_H);
       const clamped = Math.max(0, Math.min(idx, items.length - 1));
-      // Force-snap to the exact pixel boundary
       ref.current?.scrollTo({ y: clamped * ITEM_H, animated: false });
       if (clamped !== committedIndex.current) {
         committedIndex.current = clamped;
@@ -49,10 +64,18 @@ export function WheelPicker({ items, selectedIndex, onSelect }: Props) {
     [items.length, onSelect],
   );
 
+  const hasSplitColors = monthColor !== undefined && dayColor !== undefined;
+
   return (
     <View style={styles.container}>
       {/* Selection highlight bar */}
-      <View style={styles.indicator} pointerEvents="none" />
+      <View
+        style={[
+          styles.indicator,
+          { borderColor: indicatorBorder, backgroundColor: indicatorBg },
+        ]}
+        pointerEvents="none"
+      />
       <ScrollView
         ref={ref}
         showsVerticalScrollIndicator={false}
@@ -62,16 +85,34 @@ export function WheelPicker({ items, selectedIndex, onSelect }: Props) {
         onMomentumScrollEnd={snapToNearest}
         onScrollEndDrag={snapToNearest}
         scrollEventThrottle={16}
-        // Disable bouncing so it can't rest between items at edges
         bounces={false}
         overScrollMode="never"
       >
         <View style={{ height: ITEM_H * PAD }} />
         {items.map((item, i) => {
           const isSelected = i === selectedIndex;
+          if (hasSplitColors && isSelected) {
+            const parts = item.split(' ');
+            const month = parts[0];
+            const day = parts.slice(1).join(' ');
+            return (
+              <View key={i} style={styles.item}>
+                <Text style={styles.selectedSplit}>
+                  <Text style={{ color: monthColor }}>{month} </Text>
+                  <Text style={{ color: dayColor }}>{day}</Text>
+                </Text>
+              </View>
+            );
+          }
           return (
             <View key={i} style={styles.item}>
-              <Text style={[styles.text, isSelected && styles.selectedText]}>
+              <Text
+                style={[
+                  styles.text,
+                  { color: dimColor },
+                  isSelected && !hasSplitColors && styles.selectedText,
+                ]}
+              >
                 {item}
               </Text>
             </View>
@@ -96,8 +137,6 @@ const styles = StyleSheet.create({
     height: ITEM_H,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255,255,255,0.06)',
     zIndex: 1,
   },
   item: {
@@ -107,12 +146,15 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.3)',
     fontFamily: Font.regular,
   },
   selectedText: {
     fontSize: 22,
     color: '#FFFFFF',
+    fontFamily: Font.extraBold,
+  },
+  selectedSplit: {
+    fontSize: 22,
     fontFamily: Font.extraBold,
   },
 });

@@ -5,18 +5,20 @@ import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
+import { AnimatedButton } from '../../components/AnimatedButton';
 import { useWishlist, removeFromWishlist } from '../../store/wishlist';
 
+// Teal = contributing (lending), Purple = withdrawing (borrowing)
 const CHIP_COLORS: Record<string, string> = {
   all:       Colors.black,
-  borrowing: Colors.teal,
-  lending:   Colors.purple,
+  borrowing: Colors.purple,
+  lending:   Colors.teal,
 };
 
 const CHIP_ACTIVE_BG: Record<string, string> = {
   all:       '#333',
-  borrowing: Colors.teal,
-  lending:   Colors.purple,
+  borrowing: Colors.purple,
+  lending:   Colors.teal,
 };
 
 const STAT_FILTERS = [
@@ -35,9 +37,10 @@ const RECENT = [
   { id: '5', title: 'The Secret History', author: 'Donna Tartt', status: 'Borrowing', type: 'borrowing' as const },
 ];
 
+// Teal = contributing (lending), Purple = withdrawing (borrowing)
 const STATUS_COLORS: Record<string, string> = {
-  'Lending':    Colors.purple,
-  'Borrowing':  Colors.teal,
+  'Lending':    Colors.teal,
+  'Borrowing':  Colors.purple,
   'In Library': '#888',
 };
 
@@ -55,9 +58,9 @@ export default function ProfileScreen() {
 
         <View style={styles.header}>
           <Text style={styles.heading}>Profile</Text>
-          <TouchableOpacity style={[styles.settingsButton, Shadow]}>
+          <AnimatedButton style={[styles.settingsButton, Shadow]}>
             <MaterialIcons name="settings" size={20} color={Colors.black} />
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         {/* Profile card */}
@@ -67,10 +70,10 @@ export default function ProfileScreen() {
             <Text style={styles.name}>Avery Whitted</Text>
             <Text style={styles.location}>Brooklyn, NY</Text>
           </View>
-          <TouchableOpacity style={[styles.editButton, Shadow]}>
+          <AnimatedButton style={[styles.editButton, Shadow]}>
             <MaterialIcons name="edit" size={16} color={Colors.black} />
             <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
         {/* Filter chips — tap to filter activity below */}
@@ -80,7 +83,7 @@ export default function ProfileScreen() {
             const accent = CHIP_COLORS[stat.key];
             const activeBg = CHIP_ACTIVE_BG[stat.key];
             return (
-              <TouchableOpacity
+              <AnimatedButton
                 key={stat.key}
                 style={[styles.statChip, { borderColor: accent, backgroundColor: active ? activeBg : Colors.white }, Shadow]}
                 onPress={() => setActiveFilter(stat.key)}
@@ -91,7 +94,7 @@ export default function ProfileScreen() {
                 <Text style={[styles.statLabel, { color: active ? Colors.white : accent }]}>
                   {stat.label}
                 </Text>
-              </TouchableOpacity>
+              </AnimatedButton>
             );
           })}
         </View>
@@ -124,12 +127,12 @@ export default function ProfileScreen() {
                 )}
               </View>
               <View style={styles.wishlistActions}>
-                <TouchableOpacity
+                <AnimatedButton
                   style={[styles.findButton, Shadow]}
                   onPress={() => router.push(`/book/${book.id}`)}
                 >
                   <Text style={styles.findButtonText}>Find</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeFromWishlist(book.id)}
@@ -173,10 +176,10 @@ export default function ProfileScreen() {
 
         <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Account</Text>
         {['Notifications', 'Privacy', 'Help & Feedback', 'Log Out'].map((item) => (
-          <TouchableOpacity key={item} style={[styles.settingsRow, Shadow]}>
+          <AnimatedButton key={item} style={[styles.settingsRow, Shadow]}>
             <Text style={[styles.settingsRowText, item === 'Log Out' && { color: '#C0392B' }]}>{item}</Text>
             {item !== 'Log Out' && <MaterialIcons name="chevron-right" size={20} color={Colors.gray} />}
-          </TouchableOpacity>
+          </AnimatedButton>
         ))}
 
       </ScrollView>

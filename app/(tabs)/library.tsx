@@ -21,23 +21,24 @@ const BOOKS: { id: string; title: string; author: string; status: BookStatus; du
 
 const STATUS_CONFIG: Record<BookStatus, { label: string; color: string }> = {
   'in-library': { label: 'In Library', color: Colors.teal    },
-  'lending':    { label: 'Lending',    color: Colors.purple  },
-  'borrowing':  { label: 'Borrowing',  color: Colors.teal    },
+  'lending':    { label: 'Lending',    color: Colors.teal    },
+  'borrowing':  { label: 'Borrowing',  color: Colors.purple  },
   'overdue':    { label: 'Overdue',    color: '#C0392B'      },
 };
 
 // Chip accent color (border + text when inactive; fill when active)
+// Teal = contributing (lending), Purple = withdrawing (borrowing)
 const CHIP_COLORS: Record<string, string> = {
   all:       Colors.black,
-  borrowing: Colors.teal,
-  lending:   Colors.purple,
+  borrowing: Colors.purple,
+  lending:   Colors.teal,
 };
 
 // Active background (Books uses dark grey, others use the accent color)
 const CHIP_ACTIVE_BG: Record<string, string> = {
   all:       '#333',
-  borrowing: Colors.teal,
-  lending:   Colors.purple,
+  borrowing: Colors.purple,
+  lending:   Colors.teal,
 };
 
 export default function LibraryScreen() {

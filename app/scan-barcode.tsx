@@ -3,6 +3,7 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Colors, Font, Radius, Shadow } from '../constants/theme';
+import { AnimatedButton } from '../components/AnimatedButton';
 
 export default function ScanBarcodeScreen() {
   const [flash, setFlash] = useState(false);
@@ -54,14 +55,14 @@ export default function ScanBarcodeScreen() {
 
       {/* Controls bar */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        <AnimatedButton
           style={[styles.controlButton, Shadow]}
           onPress={() => router.replace('/add-book-manual')}
         >
           <MaterialIcons name="edit" size={18} color={Colors.black} />
           <Text style={styles.controlButtonText}>Enter Manually</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </AnimatedButton>
+        <AnimatedButton
           style={[styles.controlButtonPrimary, Shadow]}
           onPress={() => {
             // Simulate a scan result and return to add-book
@@ -70,7 +71,7 @@ export default function ScanBarcodeScreen() {
         >
           <MaterialCommunityIcons name="barcode-scan" size={18} color={Colors.white} />
           <Text style={styles.controlButtonPrimaryText}>Searching…</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </SafeAreaView>
   );

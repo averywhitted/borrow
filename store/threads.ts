@@ -30,6 +30,7 @@ export interface Thread {
   lastUpdated: number;
   borrowingCount?: number;
   lendingCount?: number;
+  unread?: boolean;
 }
 
 // ─── Seed data ───────────────────────────────────────────────────────────────
@@ -44,6 +45,7 @@ const threadStore: Thread[] = [
     lastUpdated: NOW - 2 * 60 * 1000,
     borrowingCount: 1,
     lendingCount: 1,
+    unread: true,
     messages: [
       {
         id: 'm1', fromMe: false, text: null, isRequestCard: true,
@@ -192,4 +194,15 @@ export function useThread(threadId: string): Thread | undefined {
     return () => { listeners.delete(update); };
   }, []);
   return getThread(threadId);
+}
+
+/** Returns whether there are any unread inbox messages. */
+export function useHasUnreadMessages(): boolean {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const update = () => setTick((t) => t + 1);
+    listeners.add(update);
+    return () => { listeners.delete(update); };
+  }, []);
+  return threadStore.some((t) => t.unread);
 }

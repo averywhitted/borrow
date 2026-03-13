@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Colors, Shadow, Radius, Font } from '../constants/theme';
+import { AnimatedButton } from '../components/AnimatedButton';
 
 const GENRES = [
   'Literary Fiction', 'Historical Fiction', 'Mystery', 'Thriller',
@@ -40,9 +41,9 @@ export default function AddBookManualScreen() {
           <Text style={styles.successSubtitle}>
             <Text style={{ fontFamily: Font.extraBold }}>{title}</Text> is now visible to neighbors.
           </Text>
-          <TouchableOpacity style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
+          <AnimatedButton style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
             <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
           <TouchableOpacity onPress={() => {
             setTitle(''); setAuthor(''); setGenres([]);
             setYear(''); setCondition(''); setNotes('');
@@ -136,13 +137,13 @@ export default function AddBookManualScreen() {
             <Text style={styles.label}>Condition</Text>
             <View style={styles.conditionRow}>
               {CONDITIONS.map((c) => (
-                <TouchableOpacity
+                <AnimatedButton
                   key={c}
                   style={[styles.conditionPill, condition === c && styles.conditionPillSelected, Shadow]}
                   onPress={() => setCondition(condition === c ? '' : c)}
                 >
                   <Text style={[styles.conditionText, condition === c && styles.conditionTextSelected]}>{c}</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
               ))}
             </View>
           </View>
@@ -166,14 +167,14 @@ export default function AddBookManualScreen() {
 
         {/* Bottom bar */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.addButton, !canSubmit && styles.addButtonDisabled, Shadow]}
             onPress={() => canSubmit && setAdded(true)}
             disabled={!canSubmit}
           >
             <MaterialIcons name="add" size={20} color={Colors.white} />
             <Text style={styles.addButtonText}>Add to Library</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
       </KeyboardAvoidingView>

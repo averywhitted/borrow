@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
+import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
 
 const LENDERS = [
@@ -69,14 +70,14 @@ export default function BookDetailScreen() {
               </View>
             </View>
             {lender.available ? (
-              <TouchableOpacity
+              <AnimatedButton
                 style={[styles.requestButton, Shadow]}
                 onPress={() => router.push(
                   `/borrow-request/${lender.id}?bookTitle=${encodeURIComponent(book.title)}&bookAuthor=${encodeURIComponent(book.author)}`
                 )}
               >
                 <Text style={styles.requestButtonText}>Request</Text>
-              </TouchableOpacity>
+              </AnimatedButton>
             ) : (
               <View style={styles.unavailablePill}>
                 <Text style={styles.unavailableText}>On Loan</Text>
@@ -90,15 +91,15 @@ export default function BookDetailScreen() {
 
       {/* Bottom bar: bookmark (secondary) + request CTA (primary) */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity
+        <AnimatedButton
           style={[styles.bookmarkButton, saved && styles.bookmarkButtonSaved, Shadow]}
           onPress={() => toggleWishlist({ id, title: book.title, author: book.author })}
         >
           <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? Colors.white : Colors.black} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.borrowButton, Shadow]}>
+        </AnimatedButton>
+        <AnimatedButton style={[styles.borrowButton, Shadow]}>
           <Text style={styles.borrowButtonText}>Request to Borrow</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </SafeAreaView>
   );

@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { WheelPicker } from '../../components/WheelPicker';
+import { AnimatedButton } from '../../components/AnimatedButton';
 import { Avatar } from '../../components/Avatar';
 import { getOrCreateThread, addBorrowRequest } from '../../store/threads';
 
@@ -98,6 +99,11 @@ export default function BorrowRequestScreen() {
               items={dates}
               selectedIndex={fromIndex}
               onSelect={handleFromChange}
+              monthColor={Colors.teal}
+              dayColor={Colors.black}
+              dimColor="rgba(0,0,0,0.25)"
+              indicatorBorder="rgba(0,0,0,0.08)"
+              indicatorBg="rgba(0,0,0,0.03)"
             />
           </View>
           <View style={styles.datePickerDivider} />
@@ -107,6 +113,11 @@ export default function BorrowRequestScreen() {
               items={dates}
               selectedIndex={untilIndex}
               onSelect={(i) => setUntilIndex(Math.max(fromIndex + 7, i))}
+              monthColor={Colors.teal}
+              dayColor={Colors.black}
+              dimColor="rgba(0,0,0,0.25)"
+              indicatorBorder="rgba(0,0,0,0.08)"
+              indicatorBg="rgba(0,0,0,0.03)"
             />
           </View>
         </View>
@@ -129,10 +140,10 @@ export default function BorrowRequestScreen() {
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={[styles.sendButton, Shadow]} onPress={handleSend}>
+        <AnimatedButton style={[styles.sendButton, Shadow]} onPress={handleSend}>
           <MaterialIcons name="send" size={20} color={Colors.white} />
           <Text style={styles.sendButtonText}>Send Request</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </SafeAreaView>
   );
@@ -165,16 +176,16 @@ const styles = StyleSheet.create({
   datePickerCard: {
     flexDirection: 'row',
     borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
     marginBottom: 24, overflow: 'hidden',
   },
   datePickerColumn: { flex: 1 },
   datePickerLabel: {
     fontSize: 11, fontWeight: '700', fontFamily: Font.bold,
-    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
+    color: Colors.black, textTransform: 'uppercase', letterSpacing: 0.8,
     textAlign: 'center', paddingTop: 14, paddingBottom: 4,
   },
-  datePickerDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.15)' },
+  datePickerDivider: { width: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
   sectionLabel: {
     fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
     color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10,

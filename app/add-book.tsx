@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Colors, Shadow, Radius, Font } from '../constants/theme';
 import { BookCover } from '../components/BookCover';
+import { AnimatedButton } from '../components/AnimatedButton';
 
 const MOCK_RESULTS = [
   {
@@ -77,9 +78,9 @@ export default function AddBookScreen() {
           <Text style={styles.successSubtitle}>
             <Text style={{ fontFamily: Font.extraBold }}>{selected.title}</Text> is now visible to neighbors.
           </Text>
-          <TouchableOpacity style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
+          <AnimatedButton style={[styles.doneButton, Shadow]} onPress={() => router.back()}>
             <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
           <TouchableOpacity onPress={() => { setAdded(false); setSelected(null); setQuery(''); }}>
             <Text style={styles.addAnotherText}>+ Add another book</Text>
           </TouchableOpacity>
@@ -124,23 +125,23 @@ export default function AddBookScreen() {
             <Text style={styles.conditionLabel}>Condition</Text>
             <View style={styles.conditionRow}>
               {['Like New', 'Good', 'Worn'].map((c) => (
-                <TouchableOpacity
+                <AnimatedButton
                   key={c}
                   style={[styles.conditionPill, condition === c && styles.conditionPillSelected, Shadow]}
                   onPress={() => setCondition(condition === c ? '' : c)}
                 >
                   <Text style={[styles.conditionText, condition === c && styles.conditionTextSelected]}>{c}</Text>
-                </TouchableOpacity>
+                </AnimatedButton>
               ))}
             </View>
           </View>
         </View>
 
         <View style={styles.bottomBar}>
-          <TouchableOpacity style={[styles.addButton, Shadow]} onPress={() => setAdded(true)}>
+          <AnimatedButton style={[styles.addButton, Shadow]} onPress={() => setAdded(true)}>
             <MaterialIcons name="add" size={20} color={Colors.white} />
             <Text style={styles.addButtonText}>Add to Library</Text>
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
       </SafeAreaView>
     );
@@ -182,7 +183,7 @@ export default function AddBookScreen() {
         {/* Results list — leaves room for the bottom bar */}
         <ScrollView contentContainerStyle={styles.resultsList}>
           {results.map((book) => (
-            <TouchableOpacity
+            <AnimatedButton
               key={book.id}
               style={[styles.resultRow, Shadow]}
               onPress={() => setSelected(book)}
@@ -195,34 +196,30 @@ export default function AddBookScreen() {
                   <Text style={styles.genreTextSmall}>{book.genre}</Text>
                 </View>
               </View>
-              {/* Add button lives inside the card, comfortably spaced */}
-              <TouchableOpacity
-                style={[styles.addCardButton, Shadow]}
-                onPress={() => setSelected(book)}
-              >
+              <View style={[styles.addCardButton]}>
                 <MaterialIcons name="add" size={16} color={Colors.white} />
-              </TouchableOpacity>
-            </TouchableOpacity>
+              </View>
+            </AnimatedButton>
           ))}
         </ScrollView>
       </View>
 
       {/* Sticky bottom bar: manual + scan */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity
+        <AnimatedButton
           style={[styles.bottomAction, Shadow]}
           onPress={() => router.push('/add-book-manual')}
         >
           <MaterialIcons name="edit" size={18} color={Colors.black} />
           <Text style={styles.bottomActionText}>Manual</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </AnimatedButton>
+        <AnimatedButton
           style={[styles.bottomActionPrimary, Shadow]}
           onPress={() => router.push('/scan-barcode')}
         >
           <MaterialCommunityIcons name="barcode" size={22} color={Colors.white} />
           <Text style={styles.bottomActionPrimaryText}>Scan Barcode</Text>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
     </SafeAreaView>
   );

@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
+import { AnimatedButton } from '../../components/AnimatedButton';
 import { useThread, updateRequestStatus, sendMessage } from '../../store/threads';
 
 export default function ThreadScreen() {
@@ -100,7 +101,7 @@ export default function ThreadScreen() {
                       <Text style={styles.dateLabel}>{req.fromDate.split(' ')[0]}</Text>
                       <Text style={styles.dateNumber}>{req.fromDate.split(' ')[1]}</Text>
                     </View>
-                    <MaterialIcons name="arrow-forward" size={20} color={Colors.white} />
+                    <MaterialIcons name="arrow-forward" size={20} color={Colors.black} />
                     <View style={styles.dateBox}>
                       <Text style={styles.dateLabel}>{req.untilDate.split(' ')[0]}</Text>
                       <Text style={styles.dateNumber}>{req.untilDate.split(' ')[1]}</Text>
@@ -116,20 +117,20 @@ export default function ThreadScreen() {
                   {/* Actions */}
                   {req.status === 'pending' && (
                     <View style={styles.requestActions}>
-                      <TouchableOpacity
+                      <AnimatedButton
                         style={[styles.acceptButton, Shadow]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'accepted')}
                       >
                         <MaterialIcons name="check" size={16} color={Colors.white} />
                         <Text style={styles.acceptButtonText}>Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
+                      </AnimatedButton>
+                      <AnimatedButton
                         style={[styles.declineButton, Shadow]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'declined')}
                       >
                         <MaterialIcons name="close" size={16} color={Colors.black} />
                         <Text style={styles.declineButtonText}>Decline</Text>
-                      </TouchableOpacity>
+                      </AnimatedButton>
                     </View>
                   )}
                   {req.status === 'accepted' && (
@@ -179,9 +180,9 @@ export default function ThreadScreen() {
           <TouchableOpacity style={styles.attachButton}>
             <MaterialIcons name="add" size={22} color={Colors.gray} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.sendButton, Shadow]} onPress={handleSend}>
+          <AnimatedButton style={[styles.sendButton, Shadow]} onPress={handleSend}>
             <MaterialIcons name="arrow-upward" size={18} color={Colors.white} />
-          </TouchableOpacity>
+          </AnimatedButton>
         </View>
 
       </KeyboardAvoidingView>
@@ -234,11 +235,11 @@ const styles = StyleSheet.create({
   },
   dateBox: {
     borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
     paddingHorizontal: 18, paddingVertical: 8, alignItems: 'center',
   },
-  dateLabel: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  dateNumber: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
+  dateLabel: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', color: Colors.teal },
+  dateNumber: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
 
   // Accept / decline
   requestActions: { flexDirection: 'row', gap: 10 },

@@ -1,5 +1,5 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
@@ -20,18 +20,20 @@ function formatTime(ts: number): string {
 
 export default function MessagesScreen() {
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
-  const tabAnim = useRef(new Animated.Value(0)).current;
+  const [tabBarWidth, setTabBarWidth] = useState(0);
+  const indicatorX = useRef(new Animated.Value(0)).current;
   const threads = useThreads();
 
-  const switchTab = (tab: 'inbox' | 'requests') => {
+  const switchTab = useCallback((tab: 'inbox' | 'requests') => {
     setActiveTab(tab);
-    Animated.spring(tabAnim, {
-      toValue: tab === 'inbox' ? 0 : 1,
-      useNativeDriver: false,
+    const toValue = tab === 'inbox' ? 0 : tabBarWidth / 2;
+    Animated.spring(indicatorX, {
+      toValue,
+      useNativeDriver: true,
       speed: 20,
       bounciness: 5,
     }).start();
-  };
+  }, [tabBarWidth]);
 
   // Derive inbox from thread store
   const inbox = [...threads]
@@ -55,11 +57,17 @@ export default function MessagesScreen() {
         <Text style={styles.heading}>Messages</Text>
 
         {/* Animated tab selector */}
-        <View style={styles.tabBar}>
+        <View
+          style={styles.tabBar}
+          onLayout={(e) => setTabBarWidth(e.nativeEvent.layout.width)}
+        >
           <Animated.View
             style={[
               styles.tabIndicator,
-              { left: tabAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '50%'] }) },
+              {
+                width: tabBarWidth > 0 ? (tabBarWidth - 6) / 2 : '50%',
+                transform: [{ translateX: indicatorX }],
+              },
             ]}
           />
           <TouchableOpacity style={styles.tab} onPress={() => switchTab('inbox')}>
@@ -142,8 +150,7 @@ const styles = StyleSheet.create({
   },
   tabIndicator: {
     position: 'absolute',
-    top: 3, bottom: 3,
-    width: '50%',
+    top: 3, bottom: 3, left: 3,
     backgroundColor: Colors.black,
     borderRadius: Radius.pill,
   },
