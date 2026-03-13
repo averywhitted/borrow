@@ -31,6 +31,8 @@ export default function RootLayout() {
       <Stack.Screen name="book/[id]" />
       <Stack.Screen name="thread/[id]" />
       <Stack.Screen name="add-book" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="scan-barcode" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="add-book-manual" options={{ presentation: 'modal' }} />
       <Stack.Screen name="borrow-request/[lenderId]" options={{ presentation: 'modal' }} />
     </Stack>
   );

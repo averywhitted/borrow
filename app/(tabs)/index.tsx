@@ -1,6 +1,10 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  ScrollView, View, Text, TouchableOpacity,
+  StyleSheet, SafeAreaView, Modal,
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
@@ -18,26 +22,109 @@ const BOOKS = [
   { id: '8', title: 'Jane Eyre', author: 'Charlotte Brontë', nearby: 9 },
 ];
 
-function BookmarkButton({ book }: { book: typeof BOOKS[number] }) {
+type Book = typeof BOOKS[number];
+
+// ── Bookmark button ───────────────────────────────────────────────────────────
+function BookmarkButton({ book, onPress }: { book: Book; onPress: () => void }) {
   const saved = useIsWishlisted(book.id);
   return (
     <TouchableOpacity
       style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, Shadow]}
-      onPress={(e) => {
-        e.stopPropagation();
-        toggleWishlist({ id: book.id, title: book.title, author: book.author, nearbyCount: book.nearby });
-      }}
+      onPress={onPress}
     >
       <MaterialIcons
         name={saved ? 'bookmark' : 'bookmark-outline'}
-        size={20}
-        color={saved ? Colors.white : Colors.white}
+        size={18}
+        color={Colors.white}
       />
+      {!saved && (
+        <Text style={styles.wishlistPlus}>+</Text>
+      )}
     </TouchableOpacity>
   );
 }
 
+// ── Three-dot options modal ───────────────────────────────────────────────────
+function OptionsModal({ book, onClose }: { book: Book; onClose: () => void }) {
+  const saved = useIsWishlisted(book.id);
+
+  const options: { icon: string; label: string; onPress: () => void; danger?: boolean }[] = [
+    {
+      icon: saved ? 'bookmark' : 'bookmark-outline',
+      label: saved ? 'Remove from Wishlist' : 'Save to Wishlist',
+      onPress: () => {
+        toggleWishlist({ id: book.id, title: book.title, author: book.author, nearbyCount: book.nearby });
+        onClose();
+      },
+    },
+    {
+      icon: 'open-in-new',
+      label: 'View Details',
+      onPress: () => { onClose(); router.push(`/book/${book.id}`); },
+    },
+    {
+      icon: 'library-add',
+      label: 'I have this book',
+      onPress: () => { onClose(); router.push('/add-book'); },
+    },
+    {
+      icon: 'share',
+      label: 'Share',
+      onPress: () => { onClose(); },
+    },
+    {
+      icon: 'block',
+      label: 'Not Interested',
+      danger: true,
+      onPress: () => { onClose(); },
+    },
+  ];
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <View style={styles.sheet}>
+            {/* Drag handle */}
+            <View style={styles.handle} />
+
+            {/* Book title header */}
+            <View style={styles.sheetHeader}>
+              <BookCover title={book.title} author={book.author} width={36} height={50} borderRadius={6} />
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={styles.sheetTitle} numberOfLines={2}>{book.title}</Text>
+                <Text style={styles.sheetAuthor}>{book.author}</Text>
+              </View>
+              <TouchableOpacity style={styles.sheetClose} onPress={onClose}>
+                <MaterialIcons name="close" size={20} color={Colors.black} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.sheetDivider} />
+
+            {options.map((opt) => (
+              <TouchableOpacity key={opt.label} style={styles.sheetOption} onPress={opt.onPress}>
+                <MaterialIcons
+                  name={opt.icon as any}
+                  size={20}
+                  color={opt.danger ? '#C0392B' : Colors.black}
+                />
+                <Text style={[styles.sheetOptionText, opt.danger && styles.sheetOptionDanger]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+}
+
+// ── Home screen ───────────────────────────────────────────────────────────────
 export default function HomeScreen() {
+  const [optionsBook, setOptionsBook] = useState<Book | null>(null);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -82,10 +169,15 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.cardActions}>
-              <BookmarkButton book={book} />
+              <BookmarkButton
+                book={book}
+                onPress={() =>
+                  toggleWishlist({ id: book.id, title: book.title, author: book.author, nearbyCount: book.nearby })
+                }
+              />
               <TouchableOpacity
                 style={[styles.moreButton, Shadow]}
-                onPress={(e) => { e.stopPropagation(); router.push(`/book/${book.id}`); }}
+                onPress={(e) => { e.stopPropagation?.(); setOptionsBook(book); }}
               >
                 <MaterialIcons name="more-horiz" size={20} color={Colors.black} />
               </TouchableOpacity>
@@ -93,10 +185,15 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {optionsBook && (
+        <OptionsModal book={optionsBook} onClose={() => setOptionsBook(null)} />
+      )}
     </SafeAreaView>
   );
 }
 
+// ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   container: { flex: 1 },
@@ -120,6 +217,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 10, marginRight: 8,
   },
   genreText: { fontSize: 13, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
+
+  // Book card
   card: {
     flexDirection: 'row',
     borderWidth: 1, borderColor: Colors.black,
@@ -129,8 +228,7 @@ const styles = StyleSheet.create({
   cardInfo: { flex: 1 },
   badge: {
     backgroundColor: Colors.lightGray, borderRadius: Radius.pill,
-    paddingHorizontal: 8, paddingVertical: 2,
-    alignSelf: 'flex-start', marginBottom: 4,
+    paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 4,
   },
   badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.gray },
   bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black, marginBottom: 2 },
@@ -138,16 +236,21 @@ const styles = StyleSheet.create({
   nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   bookNearby: { fontSize: 11, color: Colors.gray, fontFamily: Font.regular },
   cardActions: { gap: 8, alignItems: 'center' },
+
+  // Bookmark button: outline+purple with + when unsaved, filled+teal when saved
   wishlistButton: {
     width: 90, height: 40,
-    alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     backgroundColor: Colors.purple,
     borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card,
   },
-  wishlistButtonSaved: {
-    backgroundColor: Colors.teal,
+  wishlistButtonSaved: { backgroundColor: Colors.teal },
+  wishlistPlus: {
+    fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white,
   },
+
+  // More button
   moreButton: {
     width: 90, height: 40,
     alignItems: 'center', justifyContent: 'center',
@@ -155,4 +258,41 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card,
   },
+
+  // Options modal
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: Colors.white,
+    borderTopWidth: 2, borderTopColor: Colors.black,
+    borderTopLeftRadius: 16, borderTopRightRadius: 16,
+    paddingTop: 0, paddingBottom: 32,
+  },
+  handle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: Colors.lightGray,
+    alignSelf: 'center', marginTop: 10, marginBottom: 2,
+  },
+  sheetHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 20, paddingVertical: 14,
+  },
+  sheetClose: {
+    width: 32, height: 32,
+    borderRadius: Radius.card,
+    borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: Colors.lightGray,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sheetTitle: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  sheetAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  sheetDivider: { height: 1, backgroundColor: Colors.black, marginBottom: 4 },
+  sheetOption: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    paddingHorizontal: 20, paddingVertical: 16,
+  },
+  sheetOptionText: { fontSize: 15, fontFamily: Font.bold, fontWeight: '600', color: Colors.black },
+  sheetOptionDanger: { color: '#C0392B' },
 });

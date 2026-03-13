@@ -2,21 +2,53 @@ import {
   View, Text, TextInput, TouchableOpacity,
   ScrollView, StyleSheet, SafeAreaView,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Colors, Shadow, Radius, Font } from '../constants/theme';
 import { BookCover } from '../components/BookCover';
 
 const MOCK_RESULTS = [
-  { id: 'b1', title: 'Tomorrow, and Tomorrow, and Tomorrow', author: 'Gabrielle Zevin', genre: 'Literary Fiction' },
-  { id: 'b2', title: 'The Covenant of Water', author: 'Abraham Verghese', genre: 'Historical Fiction' },
-  { id: 'b3', title: 'Intermezzo', author: 'Sally Rooney', genre: 'Literary Fiction' },
-  { id: 'b4', title: 'James', author: 'Percival Everett', genre: 'Literary Fiction' },
-  { id: 'b5', title: 'The Women', author: 'Kristin Hannah', genre: 'Historical Fiction' },
-  { id: 'b6', title: 'Orbital', author: 'Samantha Harvey', genre: 'Literary Fiction' },
-  { id: 'b7', title: 'All Fours', author: 'Miranda July', genre: 'Literary Fiction' },
-  { id: 'b8', title: 'The God of the Woods', author: 'Lauren Fox', genre: 'Mystery' },
+  {
+    id: 'b1', title: 'Tomorrow, and Tomorrow, and Tomorrow', author: 'Gabrielle Zevin',
+    genre: 'Literary Fiction', year: 2022, pages: 480,
+    description: 'Two friends collaborate as video game designers across decades, exploring identity, loss, and love.',
+  },
+  {
+    id: 'b2', title: 'The Covenant of Water', author: 'Abraham Verghese',
+    genre: 'Historical Fiction', year: 2023, pages: 736,
+    description: 'A multigenerational saga set in South India, spanning a century of faith, medicine, and water.',
+  },
+  {
+    id: 'b3', title: 'Intermezzo', author: 'Sally Rooney',
+    genre: 'Literary Fiction', year: 2024, pages: 464,
+    description: 'Two brothers navigate grief and love after their father\'s death, each pursuing connection in different ways.',
+  },
+  {
+    id: 'b4', title: 'James', author: 'Percival Everett',
+    genre: 'Literary Fiction', year: 2024, pages: 320,
+    description: 'A reimagining of Huckleberry Finn from Jim\'s perspective, exploring race and freedom in antebellum America.',
+  },
+  {
+    id: 'b5', title: 'The Women', author: 'Kristin Hannah',
+    genre: 'Historical Fiction', year: 2024, pages: 480,
+    description: 'A young woman serves as an Army nurse in Vietnam and returns home to a country that doesn\'t recognize her sacrifice.',
+  },
+  {
+    id: 'b6', title: 'Orbital', author: 'Samantha Harvey',
+    genre: 'Literary Fiction', year: 2023, pages: 224,
+    description: 'Six astronauts orbit Earth over a single day, contemplating the planet below and what it means to be human.',
+  },
+  {
+    id: 'b7', title: 'All Fours', author: 'Miranda July',
+    genre: 'Literary Fiction', year: 2024, pages: 368,
+    description: 'A woman in her forties abandons a cross-country trip and stays in a motel room, undergoing a radical transformation.',
+  },
+  {
+    id: 'b8', title: 'The God of the Woods', author: 'Lauren Fox',
+    genre: 'Mystery', year: 2024, pages: 400,
+    description: 'When a girl vanishes from an Adirondacks summer camp, decades of hidden family secrets begin to surface.',
+  },
 ];
 
 type Book = typeof MOCK_RESULTS[number];
@@ -25,6 +57,7 @@ export default function AddBookScreen() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Book | null>(null);
   const [added, setAdded] = useState(false);
+  const [condition, setCondition] = useState('');
 
   const results = query.length > 1
     ? MOCK_RESULTS.filter(b =>
@@ -32,6 +65,7 @@ export default function AddBookScreen() {
         b.author.toLowerCase().includes(query.toLowerCase()))
     : MOCK_RESULTS;
 
+  // ── Success state ───────────────────────────────────────────────────────────
   if (added && selected) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -54,6 +88,7 @@ export default function AddBookScreen() {
     );
   }
 
+  // ── Confirm state ───────────────────────────────────────────────────────────
   if (selected) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -73,6 +108,8 @@ export default function AddBookScreen() {
               </View>
               <Text style={styles.confirmTitle}>{selected.title}</Text>
               <Text style={styles.confirmAuthor}>{selected.author}</Text>
+              <Text style={styles.confirmMeta}>{selected.year} · {selected.pages} pages</Text>
+              <Text style={styles.confirmDescription} numberOfLines={3}>{selected.description}</Text>
             </View>
           </View>
 
@@ -87,8 +124,12 @@ export default function AddBookScreen() {
             <Text style={styles.conditionLabel}>Condition</Text>
             <View style={styles.conditionRow}>
               {['Like New', 'Good', 'Worn'].map((c) => (
-                <TouchableOpacity key={c} style={[styles.conditionPill, Shadow]}>
-                  <Text style={styles.conditionText}>{c}</Text>
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.conditionPill, condition === c && styles.conditionPillSelected, Shadow]}
+                  onPress={() => setCondition(condition === c ? '' : c)}
+                >
+                  <Text style={[styles.conditionText, condition === c && styles.conditionTextSelected]}>{c}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -105,6 +146,7 @@ export default function AddBookScreen() {
     );
   }
 
+  // ── Search state ────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -137,6 +179,7 @@ export default function AddBookScreen() {
           {query.length > 1 ? `${results.length} results` : 'Popular right now'}
         </Text>
 
+        {/* Results list — leaves room for the bottom bar */}
         <ScrollView contentContainerStyle={styles.resultsList}>
           {results.map((book) => (
             <TouchableOpacity
@@ -152,10 +195,34 @@ export default function AddBookScreen() {
                   <Text style={styles.genreTextSmall}>{book.genre}</Text>
                 </View>
               </View>
-              <MaterialIcons name="add-circle-outline" size={24} color={Colors.teal} />
+              {/* Add button lives inside the card, comfortably spaced */}
+              <TouchableOpacity
+                style={[styles.addCardButton, Shadow]}
+                onPress={() => setSelected(book)}
+              >
+                <MaterialIcons name="add" size={16} color={Colors.white} />
+              </TouchableOpacity>
             </TouchableOpacity>
           ))}
         </ScrollView>
+      </View>
+
+      {/* Sticky bottom bar: manual + scan */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.bottomAction, Shadow]}
+          onPress={() => router.push('/add-book-manual')}
+        >
+          <MaterialIcons name="edit" size={18} color={Colors.black} />
+          <Text style={styles.bottomActionText}>Manual</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.bottomActionPrimary, Shadow]}
+          onPress={() => router.push('/scan-barcode')}
+        >
+          <MaterialCommunityIcons name="barcode" size={22} color={Colors.white} />
+          <Text style={styles.bottomActionPrimaryText}>Scan Barcode</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -176,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 12, fontWeight: '700', fontFamily: Font.bold,
     color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10,
   },
-  resultsList: { gap: 10, paddingBottom: 32 },
+  resultsList: { gap: 10, paddingBottom: 16, paddingRight: 4 },
   resultRow: {
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1, borderColor: Colors.black, borderRadius: Radius.card,
@@ -190,6 +257,17 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 2, marginTop: 2,
   },
   genreTextSmall: { fontSize: 10, fontWeight: '600', fontFamily: Font.bold, color: Colors.gray },
+
+  // Add button inside each result card
+  addCardButton: {
+    width: 36, height: 36,
+    borderRadius: Radius.card,
+    backgroundColor: Colors.teal,
+    borderWidth: 1, borderColor: Colors.black,
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  // Confirm view
   backRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
   backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
   confirmCard: {
@@ -205,6 +283,8 @@ const styles = StyleSheet.create({
   genreText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
   confirmTitle: { fontSize: 18, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   confirmAuthor: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
+  confirmMeta: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
+  confirmDescription: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray, lineHeight: 17 },
   infoBox: {
     flexDirection: 'row', gap: 10,
     borderWidth: 1, borderColor: Colors.black, borderRadius: Radius.card,
@@ -213,21 +293,42 @@ const styles = StyleSheet.create({
   infoText: { flex: 1, fontSize: 13, fontFamily: Font.regular, color: Colors.black, lineHeight: 19 },
   conditionSection: { gap: 10 },
   conditionLabel: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  conditionRow: { flexDirection: 'row', gap: 10 },
+  conditionRow: { flexDirection: 'row', gap: 10, paddingBottom: 4 },
   conditionPill: {
     borderWidth: 1, borderColor: Colors.black, borderRadius: Radius.pill,
     paddingHorizontal: 16, paddingVertical: 8, backgroundColor: Colors.white,
   },
+  conditionPillSelected: { backgroundColor: '#333' },
   conditionText: { fontSize: 13, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
+  conditionTextSelected: { color: Colors.white },
+
+  // Shared bottom bar
   bottomBar: {
+    flexDirection: 'row', gap: 10,
     padding: 16, borderTopWidth: 1, borderTopColor: Colors.black, backgroundColor: Colors.white,
   },
+  bottomAction: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1, borderColor: Colors.black, borderRadius: Radius.card,
+    backgroundColor: Colors.white, paddingVertical: 12, paddingHorizontal: 16,
+  },
+  bottomActionText: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  bottomActionPrimary: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1, borderColor: Colors.black, borderRadius: Radius.card,
+    backgroundColor: Colors.teal, paddingVertical: 12,
+  },
+  bottomActionPrimaryText: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+
+  // Add-to-library bottom bar (confirm state)
   addButton: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, paddingVertical: 14,
   },
   addButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
+
+  // Success state
   successScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 },
   successIcon: {
     width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.teal,

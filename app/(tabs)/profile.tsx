@@ -1,25 +1,41 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
 import { useWishlist, removeFromWishlist } from '../../store/wishlist';
 
-const STATS = [
-  { label: 'Books', value: 6 },
-  { label: 'Borrowed', value: 4 },
-  { label: 'Lent Out', value: 3 },
-];
+const STAT_FILTERS = [
+  { key: 'all', label: 'Books', value: 6 },
+  { key: 'borrowing', label: 'Borrowing', value: 4 },
+  { key: 'lending', label: 'Lending', value: 3 },
+] as const;
+
+type FilterKey = typeof STAT_FILTERS[number]['key'];
 
 const RECENT = [
-  { id: '1', title: 'Piranesi', author: 'Susanna Clarke', status: 'On Loan' },
-  { id: '2', title: 'Dune', author: 'Frank Herbert', status: 'In Library' },
-  { id: '3', title: 'Kindred', author: 'Octavia Butler', status: 'In Library' },
+  { id: '1', title: 'Piranesi', author: 'Susanna Clarke', status: 'Lent Out', type: 'lending' as const },
+  { id: '2', title: 'Dune', author: 'Frank Herbert', status: 'In Library', type: 'all' as const },
+  { id: '3', title: 'Kindred', author: 'Octavia Butler', status: 'Borrowed', type: 'borrowing' as const },
+  { id: '4', title: 'Normal People', author: 'Sally Rooney', status: 'Lent Out', type: 'lending' as const },
+  { id: '5', title: 'The Secret History', author: 'Donna Tartt', status: 'Borrowed', type: 'borrowing' as const },
 ];
+
+const STATUS_COLORS: Record<string, string> = {
+  'Lent Out': Colors.purple,
+  'Borrowed': Colors.teal,
+  'In Library': '#888',
+};
 
 export default function ProfileScreen() {
   const wishlist = useWishlist();
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+
+  const filteredRecent = activeFilter === 'all'
+    ? RECENT
+    : RECENT.filter((b) => b.type === activeFilter);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -32,7 +48,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Profile card with gradient avatar */}
+        {/* Profile card */}
         <View style={styles.profileCard}>
           <Avatar name="Avery Whitted" size={56} />
           <View style={styles.profileInfo}>
@@ -45,12 +61,21 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Filter chips — tap to filter activity below */}
         <View style={styles.statsRow}>
-          {STATS.map((stat) => (
-            <View key={stat.label} style={styles.statCard}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
+          {STAT_FILTERS.map((stat) => (
+            <TouchableOpacity
+              key={stat.key}
+              style={[styles.statChip, activeFilter === stat.key && styles.statChipActive, Shadow]}
+              onPress={() => setActiveFilter(stat.key)}
+            >
+              <Text style={[styles.statValue, activeFilter === stat.key && styles.statValueActive]}>
+                {stat.value}
+              </Text>
+              <Text style={[styles.statLabel, activeFilter === stat.key && styles.statLabelActive]}>
+                {stat.label}
+              </Text>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -99,19 +124,35 @@ export default function ProfileScreen() {
           ))
         )}
 
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Recent Activity</Text>
-        {RECENT.map((book) => (
-          <View key={book.id} style={styles.bookRow}>
-            <BookCover title={book.title} author={book.author} width={44} height={60} />
-            <View style={styles.bookInfo}>
-              <Text style={styles.bookTitle}>{book.title}</Text>
-              <Text style={styles.bookAuthor}>{book.author}</Text>
-            </View>
-            <View style={[styles.statusPill, { backgroundColor: book.status === 'On Loan' ? Colors.purple : Colors.teal }]}>
-              <Text style={styles.statusText}>{book.status}</Text>
-            </View>
+        {/* Recent activity — filtered by stat chip */}
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+          <Text style={styles.sectionTitle}>
+            {activeFilter === 'all' ? 'Recent Activity' : activeFilter === 'borrowing' ? 'Borrowing' : 'Lending'}
+          </Text>
+          <View style={[styles.wishlistBadge, { backgroundColor: Colors.gray }]}>
+            <Text style={styles.wishlistBadgeText}>{filteredRecent.length}</Text>
           </View>
-        ))}
+        </View>
+
+        {filteredRecent.length === 0 ? (
+          <View style={styles.emptyWishlist}>
+            <MaterialIcons name="menu-book" size={28} color={Colors.lightGray} />
+            <Text style={styles.emptyWishlistText}>Nothing here yet</Text>
+          </View>
+        ) : (
+          filteredRecent.map((book) => (
+            <View key={book.id} style={styles.bookRow}>
+              <BookCover title={book.title} author={book.author} width={44} height={60} />
+              <View style={styles.bookInfo}>
+                <Text style={styles.bookTitle}>{book.title}</Text>
+                <Text style={styles.bookAuthor}>{book.author}</Text>
+              </View>
+              <View style={[styles.statusPill, { backgroundColor: STATUS_COLORS[book.status] ?? Colors.gray }]}>
+                <Text style={styles.statusText}>{book.status}</Text>
+              </View>
+            </View>
+          ))
+        )}
 
         <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Account</Text>
         {['Notifications', 'Privacy', 'Help & Feedback', 'Log Out'].map((item) => (
@@ -128,7 +169,8 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, paddingBottom: 40 },
+  content: { padding: 16, paddingRight: 20, paddingBottom: 40 },
+
   header: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 20,
@@ -138,6 +180,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, padding: 8, backgroundColor: Colors.white,
   },
+
   profileCard: {
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1, borderColor: Colors.black,
@@ -154,27 +197,31 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   editButtonText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
-  statCard: {
+
+  // Stat filter chips
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 24, paddingBottom: 4 },
+  statChip: {
     flex: 1, borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, backgroundColor: Colors.white,
     padding: 12, alignItems: 'center',
   },
+  statChipActive: { backgroundColor: '#333' },
   statValue: { fontSize: 22, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  statValueActive: { color: Colors.white },
   statLabel: { fontSize: 11, fontFamily: Font.bold, color: Colors.gray, fontWeight: '600', marginTop: 2 },
+  statLabelActive: { color: Colors.lightGray },
 
   // Section headers
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   sectionTitle: {
     fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
     color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
-    marginBottom: 10,
   },
   wishlistBadge: {
     backgroundColor: Colors.teal, borderRadius: Radius.pill,
     borderWidth: 1, borderColor: Colors.black,
     minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center',
-    paddingHorizontal: 5, marginBottom: 10,
+    paddingHorizontal: 5,
   },
   wishlistBadgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
 
@@ -202,7 +249,7 @@ const styles = StyleSheet.create({
   findButtonText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
   removeButton: { padding: 4 },
 
-  // Shared book row
+  // Activity book row
   bookRow: {
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1, borderColor: Colors.black,
@@ -219,11 +266,13 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4,
   },
   statusText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+
+  // Settings rows
   settingsRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, backgroundColor: Colors.white,
-    paddingHorizontal: 14, paddingVertical: 14, marginBottom: 10,
+    paddingLeft: 14, paddingRight: 20, paddingVertical: 14, marginBottom: 10,
   },
   settingsRowText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
 });

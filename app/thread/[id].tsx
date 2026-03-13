@@ -287,6 +287,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     paddingHorizontal: 12,
     fontSize: 14, fontFamily: Font.regular, color: Colors.black,
+    textAlignVertical: 'center',
+    paddingTop: 0, paddingBottom: 0,
   },
   attachButton: {
     width: SEND_BTN, height: SEND_BTN,
