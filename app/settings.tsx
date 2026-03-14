@@ -1,5 +1,5 @@
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert, ScrollView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -15,18 +15,23 @@ const THEME_OPTIONS: { key: ThemePref; label: string; icon: React.ComponentProps
 
 // ── Settings row ──────────────────────────────────────────────────────────────
 function SettingsRow({
-  icon, label, onPress, isDark,
-}: { icon: string; label: string; onPress?: () => void; isDark: boolean }) {
+  icon, label, onPress, isDark, color, last,
+}: {
+  icon: string; label: string; onPress?: () => void;
+  isDark: boolean; color?: string; last?: boolean;
+}) {
   const C = getColors(isDark);
+  const labelColor = color ?? C.black;
+  const iconColor = color ?? C.gray;
   return (
     <TouchableOpacity
-      style={[styles.row, { borderBottomColor: C.lightGray }]}
+      style={[styles.row, { borderBottomColor: C.lightGray, borderBottomWidth: last ? 0 : 1 }]}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
     >
-      <MaterialIcons name={icon as any} size={20} color={C.gray} />
-      <Text style={[styles.rowLabel, { color: C.black }]}>{label}</Text>
-      {onPress && <MaterialIcons name="chevron-right" size={18} color={C.lightGray} />}
+      <MaterialIcons name={icon as any} size={20} color={iconColor} />
+      <Text style={[styles.rowLabel, { color: labelColor }]}>{label}</Text>
+      {onPress && !color && <MaterialIcons name="chevron-right" size={18} color={C.lightGray} />}
     </TouchableOpacity>
   );
 }
@@ -36,6 +41,23 @@ export default function SettingsScreen() {
   const isDark = useIsDark();
   const pref = useThemePref();
   const C = getColors(isDark);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Log out?',
+      'You will be returned to the login screen.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log out', style: 'destructive',
+          onPress: () => {
+            // TODO: clear auth tokens (issue #13)
+            router.replace('/auth/index');
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: C.background }]}>
@@ -48,43 +70,86 @@ export default function SettingsScreen() {
         <Text style={[styles.heading, { color: C.black }]}>Settings</Text>
       </View>
 
-      {/* Appearance */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: C.gray }]}>APPEARANCE</Text>
+      <ScrollView>
 
-        <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black }]}>
-          <Text style={[styles.settingTitle, { color: C.black }]}>Theme</Text>
-          <Text style={[styles.settingDesc, { color: C.gray }]}>
-            Choose how Borrow looks on this device
-          </Text>
-          <SlidingSelector
-            options={THEME_OPTIONS}
-            selected={pref}
-            onSelect={(key) => setThemePref(key as ThemePref)}
-          />
+        {/* Appearance */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: C.gray }]}>APPEARANCE</Text>
+          <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black }]}>
+            <Text style={[styles.settingTitle, { color: C.black }]}>Theme</Text>
+            <Text style={[styles.settingDesc, { color: C.gray }]}>
+              Choose how Borrow looks on this device
+            </Text>
+            <SlidingSelector
+              options={THEME_OPTIONS}
+              selected={pref}
+              onSelect={(key) => setThemePref(key as ThemePref)}
+            />
+          </View>
         </View>
-      </View>
 
-      {/* Account */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: C.gray }]}>ACCOUNT</Text>
-        <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black, padding: 0 }]}>
-          <SettingsRow icon="person-outline" label="Edit Profile" onPress={() => router.push('/profile-edit')} isDark={isDark} />
-          <SettingsRow icon="notifications-none" label="Notifications" isDark={isDark} />
-          <SettingsRow icon="lock-outline" label="Privacy" isDark={isDark} />
+        {/* Account */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: C.gray }]}>ACCOUNT</Text>
+          <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black, padding: 0 }]}>
+            <SettingsRow
+              icon="person-outline" label="Edit Profile"
+              onPress={() => router.push('/profile-edit')}
+              isDark={isDark}
+            />
+            <SettingsRow
+              icon="notifications-none" label="Notifications"
+              onPress={() => router.push('/notifications-settings')}
+              isDark={isDark}
+            />
+            <SettingsRow
+              icon="lock-outline" label="Privacy"
+              onPress={() => router.push('/privacy')}
+              isDark={isDark}
+              last
+            />
+          </View>
         </View>
-      </View>
 
-      {/* About */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: C.gray }]}>ABOUT</Text>
-        <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black, padding: 0 }]}>
-          <SettingsRow icon="info-outline" label="About Borrow" isDark={isDark} />
-          <SettingsRow icon="star-outline" label="Rate the App" isDark={isDark} />
+        {/* About */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: C.gray }]}>ABOUT</Text>
+          <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black, padding: 0 }]}>
+            <SettingsRow
+              icon="info-outline" label="About Borrow"
+              onPress={() => router.push('/about')}
+              isDark={isDark}
+            />
+            <SettingsRow
+              icon="bug-report" label="Report a Bug"
+              onPress={() => router.push('/report?type=bug')}
+              isDark={isDark}
+            />
+            <SettingsRow
+              icon="star-outline" label="Rate the App"
+              isDark={isDark}
+              last
+              // TODO: StoreKit / Play In-App Review once live in stores (issue #22)
+            />
+          </View>
         </View>
-      </View>
 
-      <Text style={[styles.version, { color: C.lightGray }]}>Version 0.1.0</Text>
+        {/* Log out */}
+        <View style={styles.section}>
+          <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black, padding: 0 }]}>
+            <SettingsRow
+              icon="logout" label="Log out"
+              onPress={handleLogout}
+              isDark={isDark}
+              color="#E53935"
+              last
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.version, { color: C.lightGray }]}>Version 0.1.0</Text>
+        <View style={{ height: 32 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -107,6 +172,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1, borderRadius: Radius.card,
     padding: 16, gap: 12,
+    overflow: 'hidden',
   },
   settingTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold },
   settingDesc: { fontSize: 12, fontFamily: Font.regular, marginTop: -4 },
@@ -114,7 +180,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1,
   },
   rowLabel: { flex: 1, fontSize: 14, fontFamily: Font.bold, fontWeight: '600' },
 

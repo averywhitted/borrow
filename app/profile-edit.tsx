@@ -13,6 +13,8 @@ import { useIsDark } from '../store/theme';
 
 const GENRE_OPTIONS = ['Literary Fiction', 'Sci-Fi', 'Fantasy', 'Mystery', 'Horror', 'Romance', 'LGBTQ+', 'Nonfiction', 'History', 'Biography'];
 const WINDOW_OPTIONS = ['1 week', '2 weeks', '1 month'];
+// Common pronoun suggestions — tapping fills the field; user can also type freely
+const PRONOUN_SUGGESTIONS = ['she/her', 'he/him', 'they/them', 'she/they', 'he/they'];
 const BIO_SUGGESTIONS = [
   'Tell neighbors about your reading life…',
   "e.g. \"Big sci-fi fan. I lend happily — just return on time 😄\"",
@@ -25,6 +27,7 @@ export default function ProfileEditScreen() {
   const styles = useMemo(() => makeStyles(C), [isDark]);
 
   const [name, setName] = useState('Avery Whitted');
+  const [pronouns, setPronouns] = useState('');
   const [location, setLocation] = useState('Brooklyn, NY');
   const [bio, setBio] = useState('');
   const [genres, setGenres] = useState<string[]>(['Literary Fiction', 'Sci-Fi', 'Fantasy']);
@@ -76,6 +79,39 @@ export default function ProfileEditScreen() {
             placeholder="Your name"
             placeholderTextColor={C.gray}
           />
+
+          {/* Pronouns */}
+          <Text style={styles.fieldLabel}>Pronouns <Text style={styles.optionalTag}>(optional)</Text></Text>
+          <Text style={styles.fieldSubLabel}>Shown on your profile — tap a suggestion or type your own</Text>
+          <TextInput
+            style={[styles.input, getShadow(isDark)]}
+            value={pronouns}
+            onChangeText={setPronouns}
+            placeholder="e.g. they/them"
+            placeholderTextColor={C.lightGray}
+            autoCapitalize="none"
+          />
+          <View style={styles.pronounSuggestions}>
+            {PRONOUN_SUGGESTIONS.map(p => (
+              <TouchableOpacity
+                key={p}
+                style={[
+                  styles.pronounChip,
+                  { borderColor: C.black, backgroundColor: C.white },
+                  pronouns === p && { backgroundColor: C.pillActive, borderColor: C.pillActive },
+                  getShadow(isDark),
+                ]}
+                onPress={() => setPronouns(prev => prev === p ? '' : p)}
+              >
+                <Text style={[
+                  styles.pronounChipText,
+                  { color: pronouns === p ? C.white : C.black },
+                ]}>
+                  {p}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           {/* Location */}
           <Text style={styles.fieldLabel}>Location</Text>
@@ -180,6 +216,14 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       marginBottom: 8, marginTop: 20,
     },
     fieldSubLabel: { fontSize: 12, fontFamily: Font.regular, color: C.gray, marginBottom: 10, marginTop: -4 },
+    optionalTag: { fontWeight: '400', textTransform: 'none', letterSpacing: 0, fontSize: 12, fontFamily: Font.regular },
+
+    pronounSuggestions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+    pronounChip: {
+      borderWidth: 1, borderRadius: Radius.pill,
+      paddingHorizontal: 12, paddingVertical: 6,
+    },
+    pronounChipText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600' },
 
     bioFooter: { marginTop: 4, minHeight: 16 },
     bioHint: { fontSize: 11, fontFamily: Font.regular, color: C.lightGray, fontStyle: 'italic' },

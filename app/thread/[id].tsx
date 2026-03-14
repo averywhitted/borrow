@@ -72,7 +72,10 @@ export default function ThreadScreen() {
               <Text style={styles.headerSubtitle}>Borrowing 1 · Lending 1</Text>
             </View>
           </TouchableOpacity>
-          <AnimatedButton style={[styles.gearButton, getShadow(isDark)]}>
+          <AnimatedButton
+            style={[styles.gearButton, getShadow(isDark)]}
+            onPress={() => router.push(`/thread/settings?id=${thread.id}`)}
+          >
             <MaterialIcons name="settings" size={20} color={C.black} />
           </AnimatedButton>
         </View>
