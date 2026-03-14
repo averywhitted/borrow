@@ -2,7 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Mod
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
 import { AnimatedButton } from '../../components/AnimatedButton';
@@ -40,6 +40,7 @@ const BOOK_HISTORY: Record<string, HistoryEntry[]> = {
 };
 
 const BOOKS: Record<string, { title: string; author: string; genre: string; description: string }> = {
+  // Library books (matched by library store IDs)
   '1': { title: 'Piranesi', author: 'Susanna Clarke', genre: 'Fantasy', description: 'In a house of infinite halls and tidal seas, Piranesi must solve the mystery of his own existence and uncover the secrets of a dangerous adversary.' },
   '2': { title: 'The Remains of the Day', author: 'Kazuo Ishiguro', genre: 'Literary Fiction', description: 'A dignified English butler reflects on his life of service and the sacrifices made in pursuit of professional ideals during a road trip through the countryside.' },
   '3': { title: 'Dune', author: 'Frank Herbert', genre: 'Sci-Fi', description: "Set on the desert planet Arrakis, Dune is the story of Paul Atreides and of a great family's ambition to rule the most important and dangerous planet in the universe." },
@@ -48,6 +49,15 @@ const BOOKS: Record<string, { title: string; author: string; genre: string; desc
   '6': { title: "Giovanni's Room", author: 'James Baldwin', genre: 'Literary Fiction', description: 'An American in Paris struggles with his identity and his love for an Italian bartender named Giovanni, torn between desire and the life expected of him.' },
   '7': { title: 'Normal People', author: 'Sally Rooney', genre: 'Literary Fiction', description: "A nuanced account of the complex relationship between Connell and Marianne, two young people from different backgrounds navigating love, friendship, and identity." },
   '8': { title: 'The Midnight Library', author: 'Matt Haig', genre: 'Fiction', description: "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived." },
+  // Home feed browse books (prefixed with 'f' to avoid collisions with library IDs)
+  'f1': { title: 'Life of Pi', author: 'Yann Martel', genre: 'Literary Fiction', description: 'A young Indian man survives 227 days on a lifeboat in the Pacific Ocean with a Bengal tiger named Richard Parker, in a story about faith, will, and the nature of reality.' },
+  'f2': { title: 'Dune', author: 'Frank Herbert', genre: 'Sci-Fi', description: "Set on the desert planet Arrakis, Dune is the story of Paul Atreides and of a great family's ambition to rule the most important and dangerous planet in the universe." },
+  'f3': { title: 'Macbeth', author: 'William Shakespeare', genre: 'Fantasy', description: "Shakespeare's dark Scottish play follows the ruthless rise and bloody fall of Macbeth, a brave Scottish general whose ambition is ignited by a prophecy from three witches." },
+  'f4': { title: 'Lord of the Flies', author: 'William Golding', genre: 'Literary Fiction', description: 'A group of British boys stranded on an uninhabited island attempt to govern themselves, with disastrous results, exploring the dark side of human nature.' },
+  'f5': { title: 'The Catcher in the Rye', author: 'J.D. Salinger', genre: 'Literary Fiction', description: 'Holden Caulfield, a disaffected teenager, narrates his experiences in New York City after being expelled from prep school, searching for meaning in a world of phonies.' },
+  'f6': { title: 'Fahrenheit 451', author: 'Ray Bradbury', genre: 'Sci-Fi', description: 'In a dystopian future, books are outlawed and firemen burn any they find. Fireman Guy Montag begins to question his society after meeting a free-spirited young woman.' },
+  'f7': { title: 'The Stand', author: 'Stephen King', genre: 'Horror', description: "A flu-like plague decimates most of humanity. The survivors — good and evil — are drawn toward an inevitable confrontation. King's epic tale of apocalypse and aftermath." },
+  'f8': { title: 'Jane Eyre', author: 'Charlotte Bronte', genre: 'Romance', description: 'An orphaned governess navigates moral and spiritual growth as she falls in love with her brooding employer, Mr. Rochester, at Thornfield Hall.' },
 };
 
 // ── Static Google Books stats (avoids rate limiting during dev) ────────────────
@@ -60,6 +70,15 @@ const BOOK_GB: Record<string, { rating: number; pages: number; year: string; rat
   '6': { rating: 4.1, pages: 159, year: '1956', ratingsCount: 78234 },
   '7': { rating: 3.8, pages: 273, year: '2018', ratingsCount: 287654 },
   '8': { rating: 3.9, pages: 304, year: '2020', ratingsCount: 892341 },
+  // Home feed books
+  'f1': { rating: 3.9, pages: 319, year: '2001', ratingsCount: 1247832 },
+  'f2': { rating: 4.2, pages: 412, year: '1965', ratingsCount: 892341 },
+  'f3': { rating: 3.9, pages: 83,  year: '1606', ratingsCount: 342891 },
+  'f4': { rating: 3.7, pages: 224, year: '1954', ratingsCount: 678234 },
+  'f5': { rating: 3.8, pages: 277, year: '1951', ratingsCount: 2341087 },
+  'f6': { rating: 3.9, pages: 158, year: '1953', ratingsCount: 1087234 },
+  'f7': { rating: 4.3, pages: 1153, year: '1978', ratingsCount: 567891 },
+  'f8': { rating: 4.2, pages: 507, year: '1847', ratingsCount: 1892341 },
 };
 
 // ── Star rating component ──────────────────────────────────────────────────────
@@ -91,7 +110,8 @@ type ExtendKey = typeof EXTEND_OPTIONS[number]['key'];
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const myBook = useBook(id);
-  const bookData = BOOKS[id] ?? BOOKS['3'];
+  // Home feed books use 'f1'-'f8' prefix; library books use '1'-'8'
+  const bookData = BOOKS[id] ?? BOOKS['1'];
   const saved = useIsWishlisted(id);
   const gbInfo = BOOK_GB[id] ?? {};
 
@@ -145,17 +165,20 @@ export default function BookDetailScreen() {
             </View>
             <Text style={styles.bookTitle}>{displayTitle}</Text>
 
-            {/* Inline stats: author · year · pages · stars */}
-            <View style={styles.inlineStats}>
-              <Text style={styles.inlineAuthor}>{displayAuthor}</Text>
-              {gbInfo.year && <Text style={styles.inlineDot}>·</Text>}
-              {gbInfo.year && <Text style={styles.inlineStat}>{gbInfo.year}</Text>}
-              {gbInfo.pages && <Text style={styles.inlineDot}>·</Text>}
-              {gbInfo.pages && <Text style={styles.inlineStat}>{gbInfo.pages}p</Text>}
-              {gbInfo.rating && <Text style={styles.inlineDot}>·</Text>}
-              {gbInfo.rating && <StarRating rating={gbInfo.rating} size={10} />}
-              {gbInfo.rating && <Text style={styles.inlineStat}>{gbInfo.rating.toFixed(1)}</Text>}
-            </View>
+            {/* Author on its own line */}
+            <Text style={styles.inlineAuthor}>{displayAuthor}</Text>
+
+            {/* Stats: year · pages · stars on a second line */}
+            {(gbInfo.year || gbInfo.pages || gbInfo.rating) && (
+              <View style={styles.inlineStats}>
+                {gbInfo.year && <Text style={styles.inlineStat}>{gbInfo.year}</Text>}
+                {gbInfo.year && gbInfo.pages && <Text style={styles.inlineDot}> · </Text>}
+                {gbInfo.pages && <Text style={styles.inlineStat}>{gbInfo.pages} pages</Text>}
+                {gbInfo.rating && (gbInfo.year || gbInfo.pages) && <Text style={styles.inlineDot}> · </Text>}
+                {gbInfo.rating && <StarRating rating={gbInfo.rating} size={10} />}
+                {gbInfo.rating && <Text style={styles.inlineStat}> {gbInfo.rating.toFixed(1)}</Text>}
+              </View>
+            )}
 
             {/* Status row (library books with active transaction) */}
             {myBook && (isLending || isBorrowing || myBook.status === 'overdue') && (
@@ -191,7 +214,7 @@ export default function BookDetailScreen() {
         {myBook && (isLending || isBorrowing) && (
           <View style={styles.actionArea}>
             <AnimatedButton
-              style={[styles.mainActionBtn, { backgroundColor: isLending ? C.teal : C.purple }, Shadow]}
+              style={[styles.mainActionBtn, { backgroundColor: isLending ? C.teal : C.purple }, getShadow(isDark)]}
               onPress={() => setConfirmAction(isLending ? 'received' : 'return')}
             >
               <MaterialIcons name={isLending ? 'check' : 'undo'} size={16} color={C.white} />
@@ -201,7 +224,7 @@ export default function BookDetailScreen() {
             </AnimatedButton>
             {isBorrowing && (
               <AnimatedButton
-                style={[styles.extendBtn, Shadow]}
+                style={[styles.extendBtn, getShadow(isDark)]}
                 onPress={() => setShowExtend(true)}
               >
                 <MaterialIcons name="event" size={14} color={C.black} />
@@ -240,7 +263,7 @@ export default function BookDetailScreen() {
           <>
             <Text style={styles.lendersSectionTitle}>{LENDERS.length} neighbors have this book</Text>
             {LENDERS.map((lender) => (
-              <View key={lender.id} style={[styles.lenderCard, Shadow]}>
+              <View key={lender.id} style={[styles.lenderCard, getShadow(isDark)]}>
                 <Avatar name={lender.name} size={44} />
                 <View style={styles.lenderInfo}>
                   <Text style={styles.lenderName}>{lender.name}</Text>
@@ -258,7 +281,7 @@ export default function BookDetailScreen() {
                 </View>
                 {lender.available ? (
                   <AnimatedButton
-                    style={[styles.requestButton, Shadow]}
+                    style={[styles.requestButton, getShadow(isDark)]}
                     onPress={() => router.push(
                       `/borrow-request/${lender.id}?bookTitle=${encodeURIComponent(displayTitle)}&bookAuthor=${encodeURIComponent(displayAuthor)}`
                     )}
@@ -282,12 +305,12 @@ export default function BookDetailScreen() {
       {!myBook && (
         <View style={styles.bottomBar}>
           <AnimatedButton
-            style={[styles.bookmarkButton, saved && styles.bookmarkButtonSaved, Shadow]}
+            style={[styles.bookmarkButton, saved && styles.bookmarkButtonSaved, getShadow(isDark)]}
             onPress={() => toggleWishlist({ id, title: displayTitle, author: displayAuthor })}
           >
             <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? C.white : C.black} />
           </AnimatedButton>
-          <AnimatedButton style={[styles.borrowButton, Shadow]}>
+          <AnimatedButton style={[styles.borrowButton, getShadow(isDark)]}>
             <Text style={styles.borrowButtonText}>Request to Borrow</Text>
           </AnimatedButton>
         </View>
@@ -296,7 +319,7 @@ export default function BookDetailScreen() {
       {/* ── Return/Received confirm modal ── */}
       <Modal visible={!!confirmAction} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, Shadow]}>
+          <View style={[styles.modalBox, getShadow(isDark)]}>
             <Text style={styles.modalTitle}>
               {confirmAction === 'received' ? 'Mark as Received?' : 'Arrange Return?'}
             </Text>
@@ -306,11 +329,11 @@ export default function BookDetailScreen() {
                 : `Open chat with ${neighborName ?? 'the lender'} to coordinate returning "${displayTitle}". A draft message will be ready to send.`}
             </Text>
             <View style={styles.modalButtons}>
-              <AnimatedButton style={[styles.modalCancel, Shadow]} onPress={() => setConfirmAction(null)}>
+              <AnimatedButton style={[styles.modalCancel, getShadow(isDark)]} onPress={() => setConfirmAction(null)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </AnimatedButton>
               <AnimatedButton
-                style={[styles.modalConfirm, { backgroundColor: confirmAction === 'received' ? C.teal : C.purple }, Shadow]}
+                style={[styles.modalConfirm, { backgroundColor: confirmAction === 'received' ? C.teal : C.purple }, getShadow(isDark)]}
                 onPress={() => {
                   if (confirmAction === 'received') {
                     markReceived(id);
@@ -341,7 +364,7 @@ export default function BookDetailScreen() {
       {/* ── Extend borrow modal ── */}
       <Modal visible={showExtend} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, Shadow]}>
+          <View style={[styles.modalBox, getShadow(isDark)]}>
             <Text style={styles.modalTitle}>Extend Borrow</Text>
             <Text style={styles.modalSubtitle}>
               How much longer would you like to borrow "{displayTitle}"?
@@ -351,7 +374,7 @@ export default function BookDetailScreen() {
               {EXTEND_OPTIONS.map(opt => (
                 <TouchableOpacity
                   key={opt.key}
-                  style={[styles.extendChip, extendOption === opt.key && styles.extendChipActive, Shadow]}
+                  style={[styles.extendChip, extendOption === opt.key && styles.extendChipActive, getShadow(isDark)]}
                   onPress={() => setExtendOption(opt.key)}
                 >
                   <Text style={[styles.extendChipText, extendOption === opt.key && styles.extendChipTextActive]}>
@@ -361,10 +384,10 @@ export default function BookDetailScreen() {
               ))}
             </View>
             <View style={styles.modalButtons}>
-              <AnimatedButton style={[styles.modalCancel, Shadow]} onPress={() => setShowExtend(false)}>
+              <AnimatedButton style={[styles.modalCancel, getShadow(isDark)]} onPress={() => setShowExtend(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </AnimatedButton>
-              <AnimatedButton style={[styles.modalConfirm, { backgroundColor: C.purple }, Shadow]} onPress={handleExtendConfirm}>
+              <AnimatedButton style={[styles.modalConfirm, { backgroundColor: C.purple }, getShadow(isDark)]} onPress={handleExtendConfirm}>
                 <Text style={styles.modalConfirmText}>Send Request</Text>
               </AnimatedButton>
             </View>
@@ -395,10 +418,10 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   bookTitle: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: C.black, lineHeight: 24 },
 
   // Inline stats row
-  inlineStats: { flexDirection: 'row', alignItems: 'center', gap: 5, flexWrap: 'wrap' },
-  inlineAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
+  inlineAuthor: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
+  inlineStats: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   inlineStat: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
-  inlineDot: { fontSize: 11, color: C.lightGray },
+  inlineDot: { fontSize: 13, fontWeight: '700', color: C.gray },
 
   // Status
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },

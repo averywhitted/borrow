@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
@@ -72,7 +72,7 @@ export default function ThreadScreen() {
               <Text style={styles.headerSubtitle}>Borrowing 1 · Lending 1</Text>
             </View>
           </TouchableOpacity>
-          <AnimatedButton style={[styles.gearButton, Shadow]}>
+          <AnimatedButton style={[styles.gearButton, getShadow(isDark)]}>
             <MaterialIcons name="settings" size={20} color={C.black} />
           </AnimatedButton>
         </View>
@@ -126,14 +126,14 @@ export default function ThreadScreen() {
                   {req.status === 'pending' && (
                     <View style={styles.requestActions}>
                       <AnimatedButton
-                        style={[styles.acceptButton, Shadow]}
+                        style={[styles.acceptButton, getShadow(isDark)]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'accepted')}
                       >
                         <MaterialIcons name="check" size={16} color={C.white} />
                         <Text style={styles.acceptButtonText}>Accept</Text>
                       </AnimatedButton>
                       <AnimatedButton
-                        style={[styles.declineButton, Shadow]}
+                        style={[styles.declineButton, getShadow(isDark)]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'declined')}
                       >
                         <MaterialIcons name="close" size={16} color={C.black} />
@@ -189,7 +189,7 @@ export default function ThreadScreen() {
           <TouchableOpacity style={styles.attachButton}>
             <MaterialIcons name="add" size={22} color={C.gray} />
           </TouchableOpacity>
-          <AnimatedButton style={[styles.sendButton, Shadow]} onPress={handleSend}>
+          <AnimatedButton style={[styles.sendButton, getShadow(isDark)]} onPress={handleSend}>
             <MaterialIcons name="arrow-upward" size={18} color={C.white} />
           </AnimatedButton>
         </View>
@@ -279,7 +279,7 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   bubbleInner: {
     maxWidth: '75%', borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 8,
-    ...Shadow,
+    ...C.shadow,
   },
   bubbleInnerMe: { backgroundColor: C.teal, borderBottomRightRadius: 0 },
   bubbleInnerThem: { backgroundColor: C.white, borderBottomLeftRadius: 0 },
@@ -292,18 +292,18 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
 
   // Input bar
   inputBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     borderTopWidth: 1, borderTopColor: C.black,
     backgroundColor: C.white, padding: 12,
   },
   input: {
-    flex: 1, height: SEND_BTN,
+    flex: 1, minHeight: SEND_BTN, maxHeight: 120,
     borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card,
     paddingHorizontal: 12,
     fontSize: 14, fontFamily: Font.regular, color: C.black,
-    textAlignVertical: 'center',
-    paddingTop: 8, paddingBottom: 0,
+    textAlignVertical: 'auto',
+    paddingTop: 8, paddingBottom: 8,
   },
   attachButton: {
     width: SEND_BTN, height: SEND_BTN,

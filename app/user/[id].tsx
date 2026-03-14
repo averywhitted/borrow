@@ -2,7 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } fr
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
@@ -92,7 +92,7 @@ export default function UserProfileScreen() {
         </TouchableOpacity>
 
         {/* Profile card */}
-        <View style={[styles.profileCard, Shadow]}>
+        <View style={[styles.profileCard, getShadow(isDark)]}>
           <View style={styles.profileTop}>
             <Avatar name={user.name} size={56} />
             <View style={styles.profileInfo}>
@@ -106,7 +106,7 @@ export default function UserProfileScreen() {
                 <Text style={styles.ratingText}>{user.stats.rating.toFixed(1)}</Text>
               </View>
             </View>
-            <AnimatedButton style={[styles.msgBtn, Shadow]} onPress={handleMessage}>
+            <AnimatedButton style={[styles.msgBtn, getShadow(isDark)]} onPress={handleMessage}>
               <MaterialIcons name="chat-bubble-outline" size={16} color={C.white} />
               <Text style={styles.msgBtnText}>Message</Text>
             </AnimatedButton>
@@ -136,14 +136,14 @@ export default function UserProfileScreen() {
         {/* Available books */}
         <Text style={styles.sectionTitle}>Available to Borrow ({availableBooks.length})</Text>
         {availableBooks.map(book => (
-          <View key={book.id} style={[styles.bookRow, Shadow]}>
+          <View key={book.id} style={[styles.bookRow, getShadow(isDark)]}>
             <BookCover title={book.title} author={book.author} width={44} height={60} borderRadius={6} />
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{book.title}</Text>
               <Text style={styles.bookAuthor}>{book.author}</Text>
             </View>
             <AnimatedButton
-              style={[styles.requestBtn, Shadow]}
+              style={[styles.requestBtn, getShadow(isDark)]}
               onPress={() => router.push(
                 `/borrow-request/${user.id}?bookTitle=${encodeURIComponent(book.title)}&bookAuthor=${encodeURIComponent(book.author)}`
               )}
@@ -158,7 +158,7 @@ export default function UserProfileScreen() {
           <>
             <Text style={[styles.sectionTitle, { marginTop: 8 }]}>Currently On Loan ({onLoanBooks.length})</Text>
             {onLoanBooks.map(book => (
-              <View key={book.id} style={[styles.bookRow, Shadow]}>
+              <View key={book.id} style={[styles.bookRow, getShadow(isDark)]}>
                 <BookCover title={book.title} author={book.author} width={44} height={60} borderRadius={6} />
                 <View style={styles.bookInfo}>
                   <Text style={styles.bookTitle}>{book.title}</Text>
@@ -212,7 +212,7 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, backgroundColor: C.background,
-    ...Shadow,
+    ...C.shadow,
   },
   stat: { flex: 1, alignItems: 'center', paddingVertical: 8 },
   statValue: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },

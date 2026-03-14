@@ -2,7 +2,7 @@ import { ScrollView, View, Text, StyleSheet, SafeAreaView, TouchableOpacity } fr
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsDark } from '../../store/theme';
@@ -56,7 +56,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       flexDirection: 'row', alignItems: 'center', marginTop: 4,
       borderWidth: 1, borderColor: C.black,
       borderRadius: Radius.card, backgroundColor: C.background,
-      ...Shadow,
+      ...C.shadow,
     },
     stat:        { flex: 1, alignItems: 'center', paddingVertical: 6 },
     statValue:   { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
@@ -87,8 +87,8 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     genreTagText: { fontSize: 12, fontFamily: Font.regular, color: C.black },
 
     // Friends
-    friendsWrap: { marginBottom: 24 },
-    friendsRow:  { flexDirection: 'row', gap: 10, paddingRight: 16 },
+    friendsWrap: { marginBottom: 24, overflow: 'visible' },
+    friendsRow:  { flexDirection: 'row', gap: 10, paddingRight: 16, paddingBottom: 8 },
     friendChip:  {
       alignItems: 'center', gap: 5,
       borderWidth: 1, borderColor: C.black,
@@ -124,7 +124,7 @@ export default function ProfileScreen() {
 
         <View style={styles.header}>
           <Text style={styles.heading}>Profile</Text>
-          <AnimatedButton style={[styles.settingsButton, Shadow]} onPress={() => router.push('/settings')}>
+          <AnimatedButton style={[styles.settingsButton, getShadow(isDark)]} onPress={() => router.push('/settings')}>
             <MaterialIcons name="settings" size={20} color={C.black} />
           </AnimatedButton>
         </View>
@@ -154,7 +154,7 @@ export default function ProfileScreen() {
               </View>
             </View>
           </View>
-          <AnimatedButton style={[styles.editButton, Shadow]} onPress={() => router.push('/profile-edit')}>
+          <AnimatedButton style={[styles.editButton, getShadow(isDark)]} onPress={() => router.push('/profile-edit')}>
             <MaterialIcons name="edit" size={15} color={C.black} />
             <Text style={styles.editButtonText}>Edit</Text>
           </AnimatedButton>
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
             {FRIENDS.map(f => (
               <TouchableOpacity
                 key={f.id}
-                style={[styles.friendChip, Shadow]}
+                style={[styles.friendChip, getShadow(isDark)]}
                 onPress={() => router.push(`/user/${f.id}`)}
               >
                 <Avatar name={f.name} size={36} />
@@ -200,7 +200,7 @@ export default function ProfileScreen() {
           {ACTIVITY.map((item, i) => (
             <TouchableOpacity
               key={i}
-              style={[styles.activityRow, Shadow]}
+              style={[styles.activityRow, getShadow(isDark)]}
               onPress={() => router.push(`/thread/${item.threadId}`)}
             >
               <View style={[styles.activityIcon, { backgroundColor: item.color }]}>

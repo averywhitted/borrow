@@ -16,7 +16,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { Colors, DarkColors, Shadow, Radius, Font } from '../constants/theme';
+import { Colors, DarkColors, Shadow, Radius, Font, getShadow } from '../constants/theme';
 import { useIsDark } from '../store/theme';
 
 export type SelectorOption =
@@ -51,12 +51,13 @@ export function SlidingSelector({ options, selected, onSelect, color, dark }: Pr
 
   const [barWidth, setBarWidth] = useState(0);
   const indicatorX = useRef(new Animated.Value(0)).current;
-  const slotW = barWidth > 0 ? (barWidth - 8) / options.length : 0;
+  // Subtract 2 for the 1px border on each side so the last option aligns correctly
+  const slotW = barWidth > 0 ? (barWidth - 10) / options.length : 0;
 
   const handleLayout = (e: { nativeEvent: { layout: { width: number } } }) => {
     const w = e.nativeEvent.layout.width;
     setBarWidth(w);
-    const tw = (w - 8) / options.length;
+    const tw = (w - 10) / options.length;
     const idx = options.findIndex(o => optKey(o) === selected);
     indicatorX.setValue((idx < 0 ? 0 : idx) * tw);
   };
@@ -76,6 +77,7 @@ export function SlidingSelector({ options, selected, onSelect, color, dark }: Pr
       style={[
         styles.container,
         { borderColor: C.black, backgroundColor: C.white },
+        getShadow(isDark),
       ]}
       onLayout={handleLayout}
     >
@@ -121,7 +123,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row', position: 'relative',
     borderWidth: 1, borderRadius: Radius.pill,
     padding: 4,
-    ...Shadow,
   },
   indicator: {
     position: 'absolute', top: 4, bottom: 4, left: 4,

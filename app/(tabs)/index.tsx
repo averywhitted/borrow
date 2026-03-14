@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
@@ -14,14 +14,14 @@ import { useIsDark } from '../../store/theme';
 const GENRES = ['Fantasy', 'Sci-Fi', 'Mystery', 'LGBTQ+', 'Horror', 'Romance'];
 
 const BOOKS = [
-  { id: '1', title: 'Life of Pi',            author: 'Yann Martel',          nearby: 16, genre: 'Literary Fiction' },
-  { id: '2', title: 'Dune',                  author: 'Frank Herbert',         nearby: 26, genre: 'Sci-Fi',    badge: '#1 In Series' },
-  { id: '3', title: 'Macbeth',               author: 'William Shakespeare',   nearby: 25, genre: 'Fantasy'  },
-  { id: '4', title: 'Lord of the Flies',     author: 'William Golding',       nearby: 12, genre: 'Literary Fiction' },
-  { id: '5', title: 'Catcher in the Rye',    author: 'J.D. Salinger',         nearby: 20, genre: 'Literary Fiction' },
-  { id: '6', title: 'Fahrenheit 451',        author: 'Ray Bradbury',          nearby: 30, genre: 'Sci-Fi'   },
-  { id: '7', title: 'The Stand',             author: 'Stephen King',          nearby: 8,  genre: 'Horror'   },
-  { id: '8', title: 'Jane Eyre',             author: 'Charlotte Brontë',      nearby: 9,  genre: 'Romance'  },
+  { id: 'f1', title: 'Life of Pi',            author: 'Yann Martel',          nearby: 16, genre: 'Literary Fiction' },
+  { id: 'f2', title: 'Dune',                  author: 'Frank Herbert',         nearby: 26, genre: 'Sci-Fi',    badge: '#1 In Series' },
+  { id: 'f3', title: 'Macbeth',               author: 'William Shakespeare',   nearby: 25, genre: 'Fantasy'  },
+  { id: 'f4', title: 'Lord of the Flies',     author: 'William Golding',       nearby: 12, genre: 'Literary Fiction' },
+  { id: 'f5', title: 'Catcher in the Rye',    author: 'J.D. Salinger',         nearby: 20, genre: 'Literary Fiction' },
+  { id: 'f6', title: 'Fahrenheit 451',        author: 'Ray Bradbury',          nearby: 30, genre: 'Sci-Fi'   },
+  { id: 'f7', title: 'The Stand',             author: 'Stephen King',          nearby: 8,  genre: 'Horror'   },
+  { id: 'f8', title: 'Jane Eyre',             author: 'Charlotte Brontë',      nearby: 9,  genre: 'Romance'  },
 ];
 
 type Book = typeof BOOKS[number];
@@ -52,7 +52,7 @@ function BookmarkButton({ book, onPress }: { book: Book; onPress: () => void }) 
   const styles = useMemo(() => makeStyles(C), [isDark]);
   return (
     <AnimatedButton
-      style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, Shadow]}
+      style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, getShadow(isDark)]}
       onPress={onPress}
     >
       <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={Colors.white} />
@@ -294,7 +294,7 @@ export default function HomeScreen() {
                   }
                 />
                 <AnimatedButton
-                  style={[styles.moreButton, Shadow]}
+                  style={[styles.moreButton, getShadow(isDark)]}
                   onPress={(e) => { e.stopPropagation?.(); setOptionsBook(book); }}
                 >
                   <MaterialIcons name="more-horiz" size={20} color={C.black} />
@@ -340,7 +340,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       borderRadius: Radius.pill, backgroundColor: C.white,
       paddingHorizontal: 14, paddingVertical: 10, marginRight: 8,
     },
-    genrePillActive: { backgroundColor: '#333', borderColor: '#333' },
+    genrePillActive: { backgroundColor: C.pillActive, borderColor: C.pillActive },
     genreText: { fontSize: 13, fontWeight: '600', fontFamily: Font.bold, color: C.black },
     genreTextActive: { color: C.white },
 

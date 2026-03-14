@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useWishlist } from '../../store/wishlist';
@@ -49,7 +49,7 @@ export default function LibraryScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.heading}>Your Library</Text>
-        <AnimatedButton style={[styles.addButton, Shadow]} onPress={() => router.push('/add-book')}>
+        <AnimatedButton style={[styles.addButton, getShadow(isDark)]} onPress={() => router.push('/add-book')}>
           <MaterialIcons name="add" size={16} color={Colors.white} />
           <Text style={styles.addButtonText}>Add Book</Text>
         </AnimatedButton>

@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, Stack } from 'expo-router';
 import { useMemo } from 'react';
-import { Font, Radius, Shadow, getColors } from '../constants/theme';
+import { Font, Radius, Shadow, getColors, getShadow } from '../constants/theme';
 import { useIsDark } from '../store/theme';
 import { AnimatedButton } from '../components/AnimatedButton';
 
@@ -16,7 +16,7 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Not Found', headerShown: false }} />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <View style={[styles.card, Shadow]}>
+          <View style={[styles.card, getShadow(isDark)]}>
             <MaterialIcons name="search-off" size={40} color={C.lightGray} />
             <Text style={styles.code}>404</Text>
             <Text style={styles.title}>Page Not Found</Text>
@@ -25,7 +25,7 @@ export default function NotFoundScreen() {
             </Text>
           </View>
           <Link href="/" asChild>
-            <AnimatedButton style={[styles.homeBtn, Shadow]}>
+            <AnimatedButton style={[styles.homeBtn, getShadow(isDark)]}>
               <MaterialIcons name="home" size={18} color={C.white} />
               <Text style={styles.homeBtnText}>Back to Home</Text>
             </AnimatedButton>

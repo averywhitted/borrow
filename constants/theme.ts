@@ -18,10 +18,6 @@ export const DarkColors = {
   background: '#141414',
 };
 
-export function getColors(isDark: boolean) {
-  return isDark ? DarkColors : Colors;
-}
-
 // Only apply to interactive button elements (TouchableOpacity), not cards/containers
 export const Shadow = {
   shadowColor: '#000000',
@@ -30,6 +26,25 @@ export const Shadow = {
   shadowRadius: 0,
   elevation: 4,
 };
+
+export const DarkShadow = {
+  shadowColor: '#FFFFFF',
+  shadowOffset: { width: 4, height: 4 },
+  shadowOpacity: 0.18,
+  shadowRadius: 0,
+  elevation: 4,
+};
+
+export function getShadow(isDark: boolean) {
+  return isDark ? DarkShadow : Shadow;
+}
+
+export function getColors(isDark: boolean) {
+  const colors = isDark ? DarkColors : Colors;
+  const shadow = isDark ? DarkShadow : Shadow;
+  const pillActive = isDark ? '#666' : '#333';
+  return { ...colors, shadow, pillActive };
+}
 
 export const Radius = {
   card: 10,

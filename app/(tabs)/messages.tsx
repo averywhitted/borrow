@@ -1,7 +1,7 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { useThreads } from '../../store/threads';
 import { useIsDark } from '../../store/theme';
@@ -163,7 +163,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       zIndex: 1,
     },
     tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.gray },
-    tabTextActive: { color: Colors.white },
+    tabTextActive: { color: C.white },
 
     badge: {
       backgroundColor: C.purple, borderRadius: Radius.pill,
@@ -171,7 +171,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       justifyContent: 'center', alignItems: 'center',
       paddingHorizontal: 5,
     },
-    badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+    badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: C.white },
 
     list: { gap: 10, paddingBottom: 32 },
     row: {
