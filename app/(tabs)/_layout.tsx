@@ -1,48 +1,56 @@
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Colors } from '../../constants/theme';
+import { getColors } from '../../constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useHasUnreadMessages } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
 
 // Pending incoming requests (TODO: derive from store)
 const HAS_PENDING_REQUESTS = true;
 
 function MessagesTabIcon({ color, size }: { color: string; size: number }) {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
   const hasUnread = useHasUnreadMessages();
-  const dotColor = HAS_PENDING_REQUESTS ? Colors.purple : hasUnread ? Colors.teal : null;
+  const dotColor = HAS_PENDING_REQUESTS ? C.purple : hasUnread ? C.teal : null;
 
   return (
-    <View style={{ width: size + 8, height: size + 8, justifyContent: 'center', alignItems: 'center' }}>
-      <MaterialIcons name="chat-bubble-outline" size={size} color={color} />
-      {dotColor && (
-        <View style={{
-          position: 'absolute', top: 0, right: 0,
-          width: 8, height: 8, borderRadius: 4,
-          backgroundColor: dotColor,
-          borderWidth: 1.5, borderColor: Colors.white,
-        }} />
-      )}
+    <View style={{ height: 60, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ width: size + 14, height: size + 14, justifyContent: 'center', alignItems: 'center' }}>
+        <MaterialIcons name="chat-bubble-outline" size={size} color={color} />
+        {dotColor && (
+          <View style={{
+            position: 'absolute', top: 0, right: 0,
+            width: 12, height: 12, borderRadius: 6,
+            backgroundColor: dotColor,
+            borderWidth: 1.5, borderColor: C.white,
+          }} />
+        )}
+      </View>
     </View>
   );
 }
 
 function TabIcon({ name, color, size }: { name: React.ComponentProps<typeof MaterialIcons>['name']; color: string; size: number }) {
   return (
-    <View style={{ width: size + 8, height: size + 8, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ height: 60, justifyContent: 'center', alignItems: 'center' }}>
       <MaterialIcons name={name} size={size} color={color} />
     </View>
   );
 }
 
 export default function TabLayout() {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.white,
+          backgroundColor: C.white,
           borderTopWidth: 2,
-          borderTopColor: Colors.black,
+          borderTopColor: C.black,
           height: 60,
           paddingBottom: 0,
           paddingTop: 0,
@@ -51,12 +59,10 @@ export default function TabLayout() {
           height: 60,
           justifyContent: 'center',
           alignItems: 'center',
-          paddingVertical: 0,
-          paddingBottom: 0,
-          paddingTop: 0,
+          padding: 0,
         },
-        tabBarActiveTintColor: Colors.black,
-        tabBarInactiveTintColor: Colors.gray,
+        tabBarActiveTintColor: C.black,
+        tabBarInactiveTintColor: C.gray,
         tabBarShowLabel: false,
       }}
     >

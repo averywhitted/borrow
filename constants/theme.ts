@@ -8,6 +8,20 @@ export const Colors = {
   background: '#FFFFFF',
 };
 
+export const DarkColors = {
+  teal: '#3AABCC',
+  purple: '#B07EED',
+  gray: '#909090',
+  lightGray: '#3C3C3C',
+  black: '#E8E8E8',
+  white: '#1C1C1C',
+  background: '#141414',
+};
+
+export function getColors(isDark: boolean) {
+  return isDark ? DarkColors : Colors;
+}
+
 // Only apply to interactive button elements (TouchableOpacity), not cards/containers
 export const Shadow = {
   shadowColor: '#000000',

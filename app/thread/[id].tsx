@@ -7,13 +7,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
 import { Colors, Shadow, Radius, Font } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
+import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useThread, updateRequestStatus, sendMessage } from '../../store/threads';
 
 export default function ThreadScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, draft } = useLocalSearchParams<{ id: string; draft?: string }>();
   const thread = useThread(id);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(typeof draft === 'string' ? draft : '');
   const scrollRef = useRef<ScrollView>(null);
 
   // Scroll to bottom when new messages arrive
@@ -56,14 +57,19 @@ export default function ThreadScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color={Colors.black} />
           </TouchableOpacity>
-          <Avatar name={neighborName} size={36} />
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerName}>{neighborName}</Text>
-            <Text style={styles.headerSubtitle}>Borrowing 1 · Lending 1</Text>
-          </View>
-          <TouchableOpacity>
-            <MaterialIcons name="settings" size={22} color={Colors.black} />
+          <TouchableOpacity
+            style={styles.headerLeft}
+            onPress={() => router.push(`/user/${thread.neighborId}`)}
+          >
+            <Avatar name={neighborName} size={36} />
+            <View style={styles.headerInfo}>
+              <Text style={styles.headerName}>{neighborName}</Text>
+              <Text style={styles.headerSubtitle}>Borrowing 1 · Lending 1</Text>
+            </View>
           </TouchableOpacity>
+          <AnimatedButton style={[styles.gearButton, Shadow]}>
+            <MaterialIcons name="settings" size={20} color={Colors.black} />
+          </AnimatedButton>
         </View>
 
         {/* Messages */}
@@ -77,34 +83,31 @@ export default function ThreadScreen() {
             if (msg.isRequestCard && msg.requestData) {
               const req = msg.requestData;
               return (
-                <View key={msg.id} style={styles.requestCard}>
+                <View key={msg.id} style={[styles.requestCardWrap, msg.fromMe ? styles.requestCardWrapMe : styles.requestCardWrapThem]}>
+                <View style={[styles.requestCard, msg.fromMe ? styles.requestCardMe : styles.requestCardThem]}>
+                  {/* Compact header: avatar + "Name wants to borrow" */}
                   <View style={styles.requestCardHeader}>
-                    <Avatar name={req.fromName} size={32} />
-                    <View>
-                      <Text style={styles.requestName}>{req.fromName}</Text>
-                      <Text style={styles.requestSubtitle}>would like to borrow</Text>
-                    </View>
+                    <Avatar name={req.fromName} size={26} />
+                    <Text style={styles.requestHeaderText} numberOfLines={1}>
+                      <Text style={styles.requestName}>{req.fromName} </Text>
+                      <Text style={styles.requestSubtitle}>wants to borrow</Text>
+                    </Text>
                   </View>
 
+                  {/* Book + dates in one block */}
                   <View style={styles.requestBook}>
-                    <View style={styles.requestCover} />
-                    <View style={{ gap: 2 }}>
-                      <Text style={styles.requestBookTitle}>{req.bookTitle}</Text>
+                    <BookCover title={req.bookTitle} author={req.bookAuthor ?? ''} width={48} height={64} />
+                    <View style={styles.requestBookInfo}>
+                      <Text style={styles.requestBookTitle} numberOfLines={2}>{req.bookTitle}</Text>
                       {req.bookAuthor && (
-                        <Text style={styles.requestBookAuthor}>by {req.bookAuthor}</Text>
+                        <Text style={styles.requestBookAuthor}>{req.bookAuthor}</Text>
                       )}
-                    </View>
-                  </View>
-
-                  <View style={styles.requestDates}>
-                    <View style={styles.dateBox}>
-                      <Text style={styles.dateLabel}>{req.fromDate.split(' ')[0]}</Text>
-                      <Text style={styles.dateNumber}>{req.fromDate.split(' ')[1]}</Text>
-                    </View>
-                    <MaterialIcons name="arrow-forward" size={20} color={Colors.black} />
-                    <View style={styles.dateBox}>
-                      <Text style={styles.dateLabel}>{req.untilDate.split(' ')[0]}</Text>
-                      <Text style={styles.dateNumber}>{req.untilDate.split(' ')[1]}</Text>
+                      <View style={styles.requestDateRow}>
+                        <MaterialIcons name="calendar-today" size={11} color={Colors.teal} />
+                        <Text style={styles.requestDateText}>{req.fromDate}</Text>
+                        <Text style={styles.requestDateSep}>→</Text>
+                        <Text style={styles.requestDateText}>{req.untilDate}</Text>
+                      </View>
                     </View>
                   </View>
 
@@ -145,6 +148,7 @@ export default function ThreadScreen() {
                       <Text style={[styles.statusRowText, { color: Colors.gray }]}>Declined</Text>
                     </View>
                   )}
+                </View>
                 </View>
               );
             }
@@ -203,6 +207,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.black,
   },
+  headerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerInfo: { flex: 1 },
   headerName: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
   headerSubtitle: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
@@ -210,36 +215,35 @@ const styles = StyleSheet.create({
   messageContent: { padding: 16, gap: 10, paddingBottom: 8 },
 
   // Request card
+  requestCardWrap: { flexDirection: 'row', marginBottom: 4 },
+  requestCardWrapMe: { justifyContent: 'flex-end' },
+  requestCardWrapThem: { justifyContent: 'flex-start' },
   requestCard: {
     borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, backgroundColor: Colors.white,
-    padding: 14, gap: 12, marginBottom: 4,
+    padding: 14, gap: 10,
+    maxWidth: '85%',
   },
-  requestCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  requestName: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  requestSubtitle: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  requestBook: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  requestCover: {
-    width: 36, height: 50, borderRadius: 4,
-    borderWidth: 1, borderColor: Colors.black, backgroundColor: Colors.lightGray,
-  },
-  requestBookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  requestCardMe: { borderBottomRightRadius: 0 },
+  requestCardThem: { borderBottomLeftRadius: 0 },
+  requestCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  requestHeaderText: { flex: 1, fontSize: 13 },
+  requestName: { fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  requestSubtitle: { fontFamily: Font.regular, color: Colors.gray },
+
+  requestBook: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  requestBookInfo: { flex: 1, gap: 4, justifyContent: 'center' },
+  requestBookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black, lineHeight: 18 },
   requestBookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  requestDateRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  requestDateText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '600', color: Colors.black },
+  requestDateSep: { fontSize: 12, color: Colors.gray },
+
   requestNote: {
     backgroundColor: Colors.background, borderRadius: Radius.card,
     borderWidth: 1, borderColor: Colors.lightGray, padding: 10,
   },
   requestNoteText: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray, fontStyle: 'italic' },
-  requestDates: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-  },
-  dateBox: {
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
-    paddingHorizontal: 18, paddingVertical: 8, alignItems: 'center',
-  },
-  dateLabel: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', color: Colors.teal },
-  dateNumber: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
 
   // Accept / decline
   requestActions: { flexDirection: 'row', gap: 10 },
@@ -270,9 +274,14 @@ const styles = StyleSheet.create({
   bubbleInner: {
     maxWidth: '75%', borderWidth: 1, borderColor: Colors.black,
     borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 8,
+    ...Shadow,
   },
-  bubbleInnerMe: { backgroundColor: Colors.teal },
-  bubbleInnerThem: { backgroundColor: Colors.white },
+  bubbleInnerMe: { backgroundColor: Colors.teal, borderBottomRightRadius: 0 },
+  bubbleInnerThem: { backgroundColor: Colors.white, borderBottomLeftRadius: 0 },
+  gearButton: {
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, padding: 6, backgroundColor: Colors.white,
+  },
   bubbleText: { fontSize: 14, fontFamily: Font.regular, color: Colors.black, lineHeight: 20 },
   bubbleTextMe: { color: Colors.white },
 
@@ -289,7 +298,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 14, fontFamily: Font.regular, color: Colors.black,
     textAlignVertical: 'center',
-    paddingTop: 0, paddingBottom: 0,
+    paddingTop: 8, paddingBottom: 0,
   },
   attachButton: {
     width: SEND_BTN, height: SEND_BTN,

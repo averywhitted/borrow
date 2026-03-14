@@ -26,12 +26,11 @@ export default function MessagesScreen() {
 
   const switchTab = useCallback((tab: 'inbox' | 'requests') => {
     setActiveTab(tab);
-    const toValue = tab === 'inbox' ? 0 : tabBarWidth / 2;
-    Animated.spring(indicatorX, {
+    const toValue = tab === 'inbox' ? 0 : (tabBarWidth - 8) / 2;
+    Animated.timing(indicatorX, {
       toValue,
+      duration: 160,
       useNativeDriver: true,
-      speed: 20,
-      bounciness: 5,
     }).start();
   }, [tabBarWidth]);
 
@@ -65,7 +64,7 @@ export default function MessagesScreen() {
             style={[
               styles.tabIndicator,
               {
-                width: tabBarWidth > 0 ? (tabBarWidth - 6) / 2 : '50%',
+                width: tabBarWidth > 0 ? (tabBarWidth - 8) / 2 : '50%',
                 transform: [{ translateX: indicatorX }],
               },
             ]}
@@ -120,11 +119,7 @@ export default function MessagesScreen() {
                     </Text>
                     <Text style={styles.rowSubtitle}>Duration: {req.duration}</Text>
                   </View>
-                  {req.incoming && (
-                    <View style={styles.incomingBadge}>
-                      <Text style={styles.incomingBadgeText}>New</Text>
-                    </View>
-                  )}
+                  {req.incoming && <View style={styles.incomingDot} />}
                 </TouchableOpacity>
               ))}
         </ScrollView>
@@ -191,9 +186,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.teal,
     borderWidth: 1, borderColor: Colors.black,
   },
-  incomingBadge: {
-    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4,
+  incomingDot: {
+    width: 10, height: 10, borderRadius: 5,
+    backgroundColor: Colors.purple,
+    borderWidth: 1, borderColor: Colors.black,
   },
-  incomingBadgeText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
 });

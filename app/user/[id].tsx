@@ -1,0 +1,240 @@
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
+import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { Avatar } from '../../components/Avatar';
+import { BookCover } from '../../components/BookCover';
+import { AnimatedButton } from '../../components/AnimatedButton';
+import { getOrCreateThread } from '../../store/threads';
+
+// Placeholder user data — will come from API
+type UserBook = { id: string; title: string; author: string; available: boolean };
+type UserData = {
+  id: string; name: string; location: string; bio: string;
+  stats: { books: number; lends: number; borrows: number; rating: number };
+  books: UserBook[];
+};
+
+const USERS: Record<string, UserData> = {
+  'jaydon': {
+    id: 'jaydon', name: 'Jaydon Workman', location: 'Brooklyn, NY', bio: 'Big sci-fi and literary fiction reader. I lend happily — just return on time 😄',
+    stats: { books: 24, lends: 14, borrows: 8, rating: 4.8 },
+    books: [
+      { id: 'u1', title: 'The Song of Achilles', author: 'Madeline Miller', available: true },
+      { id: 'u2', title: 'Klara and the Sun', author: 'Kazuo Ishiguro', available: true },
+      { id: 'u3', title: 'Never Let Me Go', author: 'Kazuo Ishiguro', available: false },
+      { id: 'u4', title: 'Recursion', author: 'Blake Crouch', available: true },
+      { id: 'u5', title: 'Project Hail Mary', author: 'Andy Weir', available: true },
+    ],
+  },
+  'priya': {
+    id: 'priya', name: 'Priya Okonkwo', location: 'Brooklyn, NY', bio: "I read mostly fiction and love discovering new authors. Currently working through Octavia Butler's back catalogue.",
+    stats: { books: 18, lends: 11, borrows: 7, rating: 5.0 },
+    books: [
+      { id: 'u6', title: 'Parable of the Sower', author: 'Octavia Butler', available: true },
+      { id: 'u7', title: 'Beloved', author: 'Toni Morrison', available: true },
+      { id: 'u8', title: 'Their Eyes Were Watching God', author: 'Zora Neale Hurston', available: false },
+    ],
+  },
+  'marcus': {
+    id: 'marcus', name: 'Marcus Lee', location: 'Brooklyn, NY', bio: 'I love a good thriller and anything Stephen King. Also big on audiobooks.',
+    stats: { books: 12, lends: 5, borrows: 3, rating: 4.6 },
+    books: [
+      { id: 'u9', title: 'It', author: 'Stephen King', available: true },
+      { id: 'u10', title: 'The Shining', author: 'Stephen King', available: true },
+    ],
+  },
+};
+
+function StarRating({ rating }: { rating: number }) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  return (
+    <View style={{ flexDirection: 'row', gap: 2 }}>
+      {[1, 2, 3, 4, 5].map(i => (
+        <MaterialIcons
+          key={i}
+          name={i <= full ? 'star' : (i === full + 1 && half) ? 'star-half' : 'star-outline'}
+          size={13}
+          color="#F5A623"
+        />
+      ))}
+    </View>
+  );
+}
+
+export default function UserProfileScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const user = USERS[id] ?? USERS['jaydon'];
+
+  const handleMessage = () => {
+    const thread = getOrCreateThread(user.id, user.name);
+    router.push(`/thread/${thread.id}`);
+  };
+
+  const availableBooks = user.books.filter(b => b.available);
+  const onLoanBooks = user.books.filter(b => !b.available);
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.content}>
+
+        {/* Back */}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={20} color={Colors.black} />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+
+        {/* Profile card */}
+        <View style={[styles.profileCard, Shadow]}>
+          <View style={styles.profileTop}>
+            <Avatar name={user.name} size={56} />
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>{user.name}</Text>
+              <View style={styles.locationRow}>
+                <MaterialIcons name="place" size={12} color={Colors.gray} />
+                <Text style={styles.location}>{user.location}</Text>
+              </View>
+              <View style={styles.ratingRow}>
+                <StarRating rating={user.stats.rating} />
+                <Text style={styles.ratingText}>{user.stats.rating.toFixed(1)}</Text>
+              </View>
+            </View>
+            <AnimatedButton style={[styles.msgBtn, Shadow]} onPress={handleMessage}>
+              <MaterialIcons name="chat-bubble-outline" size={16} color={Colors.white} />
+              <Text style={styles.msgBtnText}>Message</Text>
+            </AnimatedButton>
+          </View>
+
+          {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
+
+          {/* Stats row */}
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{user.stats.books}</Text>
+              <Text style={styles.statLabel}>Books</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={[styles.statValue, { color: Colors.teal }]}>{user.stats.lends}</Text>
+              <Text style={styles.statLabel}>Lends</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <Text style={[styles.statValue, { color: Colors.purple }]}>{user.stats.borrows}</Text>
+              <Text style={styles.statLabel}>Borrows</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Available books */}
+        <Text style={styles.sectionTitle}>Available to Borrow ({availableBooks.length})</Text>
+        {availableBooks.map(book => (
+          <View key={book.id} style={[styles.bookRow, Shadow]}>
+            <BookCover title={book.title} author={book.author} width={44} height={60} borderRadius={6} />
+            <View style={styles.bookInfo}>
+              <Text style={styles.bookTitle}>{book.title}</Text>
+              <Text style={styles.bookAuthor}>{book.author}</Text>
+            </View>
+            <AnimatedButton
+              style={[styles.requestBtn, Shadow]}
+              onPress={() => router.push(
+                `/borrow-request/${user.id}?bookTitle=${encodeURIComponent(book.title)}&bookAuthor=${encodeURIComponent(book.author)}`
+              )}
+            >
+              <Text style={styles.requestBtnText}>Request</Text>
+            </AnimatedButton>
+          </View>
+        ))}
+
+        {/* On loan books */}
+        {onLoanBooks.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: 8 }]}>Currently On Loan ({onLoanBooks.length})</Text>
+            {onLoanBooks.map(book => (
+              <View key={book.id} style={[styles.bookRow, Shadow]}>
+                <BookCover title={book.title} author={book.author} width={44} height={60} borderRadius={6} />
+                <View style={styles.bookInfo}>
+                  <Text style={styles.bookTitle}>{book.title}</Text>
+                  <Text style={styles.bookAuthor}>{book.author}</Text>
+                </View>
+                <View style={styles.onLoanPill}>
+                  <Text style={styles.onLoanText}>On Loan</Text>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: Colors.background },
+  content: { padding: 16, paddingBottom: 32 },
+
+  backButton: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
+  backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
+
+  profileCard: {
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 14, marginBottom: 24, gap: 12,
+  },
+  profileTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  profileInfo: { flex: 1, gap: 4 },
+  name: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  location: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  ratingText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '700', color: Colors.gray },
+
+  msgBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 8,
+    alignSelf: 'flex-start',
+  },
+  msgBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+
+  bio: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray, lineHeight: 19 },
+
+  statsRow: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.background,
+    ...Shadow,
+  },
+  stat: { flex: 1, alignItems: 'center', paddingVertical: 8 },
+  statValue: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  statLabel: { fontSize: 10, fontFamily: Font.regular, color: Colors.gray, marginTop: 1 },
+  statDivider: { width: 1, alignSelf: 'stretch', marginVertical: 6, backgroundColor: Colors.lightGray },
+
+  sectionTitle: {
+    fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
+    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  bookRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, backgroundColor: Colors.white,
+    padding: 12, marginBottom: 10,
+  },
+  bookInfo: { flex: 1, gap: 3 },
+  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  requestBtn: {
+    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  requestBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  onLoanPill: {
+    borderWidth: 1, borderColor: Colors.lightGray,
+    borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 6,
+  },
+  onLoanText: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+});

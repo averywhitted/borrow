@@ -34,6 +34,9 @@ export default function RootLayout() {
       <Stack.Screen name="scan-barcode" options={{ presentation: 'modal' }} />
       <Stack.Screen name="add-book-manual" options={{ presentation: 'modal' }} />
       <Stack.Screen name="borrow-request/[lenderId]" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="profile-edit" />
+      <Stack.Screen name="user/[id]" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }
