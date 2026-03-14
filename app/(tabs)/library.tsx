@@ -3,13 +3,14 @@ import {
   StyleSheet, SafeAreaView, Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useWishlist } from '../../store/wishlist';
 import { useBooks } from '../../store/library';
+import { useIsDark } from '../../store/theme';
 
 type LibraryTab = 'lending' | 'borrowing' | 'wishlist';
 
@@ -20,6 +21,10 @@ const TAB_COLOR: Record<LibraryTab, string> = {
 };
 
 export default function LibraryScreen() {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
+
   const books = useBooks();
   const [activeTab, setActiveTab] = useState<LibraryTab>('lending');
   const [tabBarWidth, setTabBarWidth] = useState(0);
@@ -38,7 +43,7 @@ export default function LibraryScreen() {
   const borrowingBooks = books.filter(b => b.status === 'borrowing');
 
   const slotWidth = tabBarWidth > 0 ? (tabBarWidth - 8) / 3 : undefined;
-  const indicatorColor = TAB_COLOR[activeTab];
+  const indicatorColor = C[activeTab === 'lending' ? 'teal' : activeTab === 'borrowing' ? 'purple' : 'gray'];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -86,7 +91,7 @@ export default function LibraryScreen() {
                     <SectionHeader
                       label="Out on Loan"
                       count={outOnLoan.length}
-                      color={Colors.teal}
+                      color={C.teal}
                     />
                     {outOnLoan.map(book => (
                       <TouchableOpacity
@@ -99,11 +104,11 @@ export default function LibraryScreen() {
                         <View style={styles.cardInfo}>
                           <Text style={styles.bookTitle}>{book.title}</Text>
                           <Text style={styles.bookAuthor}>{book.author}</Text>
-                          <Text style={[styles.dueText, { color: book.status === 'overdue' ? '#C0392B' : Colors.teal }]}>
+                          <Text style={[styles.dueText, { color: book.status === 'overdue' ? '#C0392B' : C.teal }]}>
                             {book.status === 'overdue' ? 'Overdue' : 'Lending'} · {book.dueDate}
                           </Text>
                         </View>
-                        <MaterialIcons name="chevron-right" size={20} color={Colors.lightGray} />
+                        <MaterialIcons name="chevron-right" size={20} color={C.lightGray} />
                       </TouchableOpacity>
                     ))}
                   </>
@@ -114,7 +119,7 @@ export default function LibraryScreen() {
                     <SectionHeader
                       label="In Your Library"
                       count={inLibrary.length}
-                      color={Colors.gray}
+                      color={C.gray}
                     />
                     {inLibrary.map(book => (
                       <TouchableOpacity
@@ -128,7 +133,7 @@ export default function LibraryScreen() {
                           <Text style={styles.bookTitle}>{book.title}</Text>
                           <Text style={styles.bookAuthor}>{book.author}</Text>
                         </View>
-                        <MaterialIcons name="chevron-right" size={20} color={Colors.lightGray} />
+                        <MaterialIcons name="chevron-right" size={20} color={C.lightGray} />
                       </TouchableOpacity>
                     ))}
                   </>
@@ -151,11 +156,11 @@ export default function LibraryScreen() {
                   <View style={styles.cardInfo}>
                     <Text style={styles.bookTitle}>{book.title}</Text>
                     <Text style={styles.bookAuthor}>{book.author}</Text>
-                    <Text style={[styles.dueText, { color: Colors.purple }]}>
+                    <Text style={[styles.dueText, { color: C.purple }]}>
                       Due {book.dueDate}
                     </Text>
                   </View>
-                  <MaterialIcons name="chevron-right" size={20} color={Colors.lightGray} />
+                  <MaterialIcons name="chevron-right" size={20} color={C.lightGray} />
                 </TouchableOpacity>
               ))
         )}
@@ -177,12 +182,12 @@ export default function LibraryScreen() {
                     <Text style={styles.bookAuthor}>{book.author}</Text>
                     {book.nearbyCount != null && (
                       <View style={styles.nearbyRow}>
-                        <MaterialIcons name="place" size={11} color={Colors.gray} />
+                        <MaterialIcons name="place" size={11} color={C.gray} />
                         <Text style={styles.nearbyText}>{book.nearbyCount} near you</Text>
                       </View>
                     )}
                   </View>
-                  <MaterialIcons name="chevron-right" size={20} color={Colors.lightGray} />
+                  <MaterialIcons name="chevron-right" size={20} color={C.lightGray} />
                 </TouchableOpacity>
               ))
         )}
@@ -193,6 +198,9 @@ export default function LibraryScreen() {
 }
 
 function SectionHeader({ label, count, color }: { label: string; count: number; color: string }) {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
   return (
     <View style={styles.sectionHeader}>
       <Text style={[styles.sectionLabel, { color }]}>{label.toUpperCase()}</Text>
@@ -204,73 +212,78 @@ function SectionHeader({ label, count, color }: { label: string; count: number; 
 }
 
 function EmptyState({ icon, text }: { icon: React.ComponentProps<typeof MaterialIcons>['name']; text: string }) {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
   return (
     <View style={styles.empty}>
-      <MaterialIcons name={icon} size={28} color={Colors.lightGray} />
+      <MaterialIcons name={icon} size={28} color={C.lightGray} />
       <Text style={styles.emptyText}>{text}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(C: ReturnType<typeof getColors>) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: C.background },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
-  },
-  heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  addButton: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 7,
-  },
-  addButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
+    header: {
+      flexDirection: 'row', alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
+    },
+    heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+    addButton: {
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+      backgroundColor: C.teal, borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 7,
+    },
+    addButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
 
-  tabBar: {
-    flexDirection: 'row', position: 'relative',
-    marginHorizontal: 16, marginBottom: 12,
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, padding: 3,
-    backgroundColor: Colors.white,
-  },
-  tabIndicator: {
-    position: 'absolute', top: 3, bottom: 3, left: 3,
-    borderRadius: Radius.pill,
-  },
-  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
-  tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.gray },
-  tabTextActive: { color: Colors.white },
+    tabBar: {
+      flexDirection: 'row', position: 'relative',
+      marginHorizontal: 16, marginBottom: 12,
+      borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.pill, padding: 3,
+      backgroundColor: C.white,
+    },
+    tabIndicator: {
+      position: 'absolute', top: 3, bottom: 3, left: 3,
+      borderRadius: Radius.pill,
+    },
+    tab: { flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
+    tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.gray },
+    tabTextActive: { color: Colors.white },
 
-  scroll: { flex: 1 },
-  list: { paddingHorizontal: 16, paddingBottom: 32, gap: 8 },
+    scroll: { flex: 1 },
+    list: { paddingHorizontal: 16, paddingBottom: 32, gap: 8 },
 
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2 },
-  sectionLabel: { fontSize: 11, fontWeight: '800', fontFamily: Font.extraBold, letterSpacing: 0.8 },
-  sectionCount: {
-    borderRadius: Radius.pill, borderWidth: 1, borderColor: Colors.black,
-    minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5,
-  },
-  sectionCountText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+    sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2 },
+    sectionLabel: { fontSize: 11, fontWeight: '800', fontFamily: Font.extraBold, letterSpacing: 0.8 },
+    sectionCount: {
+      borderRadius: Radius.pill, borderWidth: 1, borderColor: C.black,
+      minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5,
+    },
+    sectionCountText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
 
-  card: {
-    flexDirection: 'row', borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
-    padding: 10, alignItems: 'center', gap: 10,
-  },
-  cardInfo: { flex: 1, gap: 3 },
-  bookTitle: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.black, lineHeight: 17 },
-  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
-  dueText: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', marginTop: 1 },
-  nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 1 },
-  nearbyText: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
+    card: {
+      flexDirection: 'row', borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.card, backgroundColor: C.white,
+      padding: 10, alignItems: 'center', gap: 10,
+    },
+    cardInfo: { flex: 1, gap: 3 },
+    bookTitle: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.black, lineHeight: 17 },
+    bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
+    dueText: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', marginTop: 1 },
+    nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 1 },
+    nearbyText: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
 
-  empty: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    borderWidth: 1, borderColor: Colors.lightGray,
-    borderRadius: Radius.card, padding: 16,
-    backgroundColor: Colors.white,
-  },
-  emptyText: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
-});
+    empty: {
+      flexDirection: 'row', alignItems: 'center', gap: 10,
+      borderWidth: 1, borderColor: C.lightGray,
+      borderRadius: Radius.card, padding: 16,
+      backgroundColor: C.white,
+    },
+    emptyText: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
+  });
+}

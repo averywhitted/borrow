@@ -4,18 +4,23 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useRef, useEffect } from 'react';
-import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useThread, updateRequestStatus, sendMessage } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
 
 export default function ThreadScreen() {
   const { id, draft } = useLocalSearchParams<{ id: string; draft?: string }>();
   const thread = useThread(id);
   const [message, setMessage] = useState(typeof draft === 'string' ? draft : '');
   const scrollRef = useRef<ScrollView>(null);
+
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -27,13 +32,13 @@ export default function ThreadScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.notFoundHeader}>
           <TouchableOpacity onPress={() => router.back()}>
-            <MaterialIcons name="arrow-back" size={24} color={Colors.black} />
+            <MaterialIcons name="arrow-back" size={24} color={C.black} />
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 }}>
-          <MaterialIcons name="chat-bubble-outline" size={40} color={Colors.lightGray} />
-          <Text style={{ fontFamily: Font.bold, color: Colors.gray, fontSize: 14 }}>No messages yet</Text>
-          <Text style={{ fontFamily: Font.regular, color: Colors.gray, fontSize: 12 }}>This conversation hasn't started.</Text>
+          <MaterialIcons name="chat-bubble-outline" size={40} color={C.lightGray} />
+          <Text style={{ fontFamily: Font.bold, color: C.gray, fontSize: 14 }}>No messages yet</Text>
+          <Text style={{ fontFamily: Font.regular, color: C.gray, fontSize: 12 }}>This conversation hasn't started.</Text>
         </View>
       </SafeAreaView>
     );
@@ -55,7 +60,7 @@ export default function ThreadScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <MaterialIcons name="arrow-back" size={24} color={Colors.black} />
+            <MaterialIcons name="arrow-back" size={24} color={C.black} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerLeft}
@@ -68,7 +73,7 @@ export default function ThreadScreen() {
             </View>
           </TouchableOpacity>
           <AnimatedButton style={[styles.gearButton, Shadow]}>
-            <MaterialIcons name="settings" size={20} color={Colors.black} />
+            <MaterialIcons name="settings" size={20} color={C.black} />
           </AnimatedButton>
         </View>
 
@@ -103,7 +108,7 @@ export default function ThreadScreen() {
                         <Text style={styles.requestBookAuthor}>{req.bookAuthor}</Text>
                       )}
                       <View style={styles.requestDateRow}>
-                        <MaterialIcons name="calendar-today" size={11} color={Colors.teal} />
+                        <MaterialIcons name="calendar-today" size={11} color={C.teal} />
                         <Text style={styles.requestDateText}>{req.fromDate}</Text>
                         <Text style={styles.requestDateSep}>→</Text>
                         <Text style={styles.requestDateText}>{req.untilDate}</Text>
@@ -124,28 +129,28 @@ export default function ThreadScreen() {
                         style={[styles.acceptButton, Shadow]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'accepted')}
                       >
-                        <MaterialIcons name="check" size={16} color={Colors.white} />
+                        <MaterialIcons name="check" size={16} color={C.white} />
                         <Text style={styles.acceptButtonText}>Accept</Text>
                       </AnimatedButton>
                       <AnimatedButton
                         style={[styles.declineButton, Shadow]}
                         onPress={() => updateRequestStatus(thread.id, req.id, 'declined')}
                       >
-                        <MaterialIcons name="close" size={16} color={Colors.black} />
+                        <MaterialIcons name="close" size={16} color={C.black} />
                         <Text style={styles.declineButtonText}>Decline</Text>
                       </AnimatedButton>
                     </View>
                   )}
                   {req.status === 'accepted' && (
                     <View style={styles.statusRow}>
-                      <MaterialIcons name="check-circle" size={14} color={Colors.teal} />
-                      <Text style={[styles.statusRowText, { color: Colors.teal }]}>Accepted</Text>
+                      <MaterialIcons name="check-circle" size={14} color={C.teal} />
+                      <Text style={[styles.statusRowText, { color: C.teal }]}>Accepted</Text>
                     </View>
                   )}
                   {req.status === 'declined' && (
                     <View style={styles.statusRow}>
-                      <MaterialIcons name="cancel" size={14} color={Colors.gray} />
-                      <Text style={[styles.statusRowText, { color: Colors.gray }]}>Declined</Text>
+                      <MaterialIcons name="cancel" size={14} color={C.gray} />
+                      <Text style={[styles.statusRowText, { color: C.gray }]}>Declined</Text>
                     </View>
                   )}
                 </View>
@@ -175,17 +180,17 @@ export default function ThreadScreen() {
           <TextInput
             style={styles.input}
             placeholder="Message..."
-            placeholderTextColor={Colors.gray}
+            placeholderTextColor={C.gray}
             value={message}
             onChangeText={setMessage}
             multiline
             onSubmitEditing={handleSend}
           />
           <TouchableOpacity style={styles.attachButton}>
-            <MaterialIcons name="add" size={22} color={Colors.gray} />
+            <MaterialIcons name="add" size={22} color={C.gray} />
           </TouchableOpacity>
           <AnimatedButton style={[styles.sendButton, Shadow]} onPress={handleSend}>
-            <MaterialIcons name="arrow-upward" size={18} color={Colors.white} />
+            <MaterialIcons name="arrow-upward" size={18} color={C.white} />
           </AnimatedButton>
         </View>
 
@@ -196,21 +201,21 @@ export default function ThreadScreen() {
 
 const SEND_BTN = 36;
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: C.background },
   flex: { flex: 1 },
   notFoundHeader: {
     flexDirection: 'row', alignItems: 'center',
-    padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.black,
+    padding: 16, borderBottomWidth: 1, borderBottomColor: C.black,
   },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.black,
+    padding: 16, borderBottomWidth: 1, borderBottomColor: C.black,
   },
   headerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerInfo: { flex: 1 },
-  headerName: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  headerSubtitle: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
+  headerName: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+  headerSubtitle: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
   messageList: { flex: 1 },
   messageContent: { padding: 16, gap: 10, paddingBottom: 8 },
 
@@ -219,8 +224,8 @@ const styles = StyleSheet.create({
   requestCardWrapMe: { justifyContent: 'flex-end' },
   requestCardWrapThem: { justifyContent: 'flex-start' },
   requestCard: {
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
     padding: 14, gap: 10,
     maxWidth: '85%',
   },
@@ -228,43 +233,43 @@ const styles = StyleSheet.create({
   requestCardThem: { borderBottomLeftRadius: 0 },
   requestCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requestHeaderText: { flex: 1, fontSize: 13 },
-  requestName: { fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  requestSubtitle: { fontFamily: Font.regular, color: Colors.gray },
+  requestName: { fontWeight: '700', fontFamily: Font.bold, color: C.black },
+  requestSubtitle: { fontFamily: Font.regular, color: C.gray },
 
   requestBook: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   requestBookInfo: { flex: 1, gap: 4, justifyContent: 'center' },
-  requestBookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black, lineHeight: 18 },
-  requestBookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  requestBookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: C.black, lineHeight: 18 },
+  requestBookAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   requestDateRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  requestDateText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '600', color: Colors.black },
-  requestDateSep: { fontSize: 12, color: Colors.gray },
+  requestDateText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '600', color: C.black },
+  requestDateSep: { fontSize: 12, color: C.gray },
 
   requestNote: {
-    backgroundColor: Colors.background, borderRadius: Radius.card,
-    borderWidth: 1, borderColor: Colors.lightGray, padding: 10,
+    backgroundColor: C.background, borderRadius: Radius.card,
+    borderWidth: 1, borderColor: C.lightGray, padding: 10,
   },
-  requestNoteText: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray, fontStyle: 'italic' },
+  requestNoteText: { fontSize: 13, fontFamily: Font.regular, color: C.gray, fontStyle: 'italic' },
 
   // Accept / decline
   requestActions: { flexDirection: 'row', gap: 10 },
   acceptButton: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.teal, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingVertical: 10,
   },
-  acceptButtonText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  acceptButtonText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.white },
   declineButton: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.white, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingVertical: 10,
   },
-  declineButtonText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  declineButtonText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.black },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   statusRowText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '600' },
 
   statusMessage: {
     fontSize: 12, fontFamily: Font.regular,
-    color: Colors.gray, textAlign: 'center', marginVertical: 4,
+    color: C.gray, textAlign: 'center', marginVertical: 4,
   },
 
   // Chat bubbles
@@ -272,31 +277,31 @@ const styles = StyleSheet.create({
   bubbleMe: { justifyContent: 'flex-end' },
   bubbleThem: { justifyContent: 'flex-start' },
   bubbleInner: {
-    maxWidth: '75%', borderWidth: 1, borderColor: Colors.black,
+    maxWidth: '75%', borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 8,
     ...Shadow,
   },
-  bubbleInnerMe: { backgroundColor: Colors.teal, borderBottomRightRadius: 0 },
-  bubbleInnerThem: { backgroundColor: Colors.white, borderBottomLeftRadius: 0 },
+  bubbleInnerMe: { backgroundColor: C.teal, borderBottomRightRadius: 0 },
+  bubbleInnerThem: { backgroundColor: C.white, borderBottomLeftRadius: 0 },
   gearButton: {
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, padding: 6, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, padding: 6, backgroundColor: C.white,
   },
-  bubbleText: { fontSize: 14, fontFamily: Font.regular, color: Colors.black, lineHeight: 20 },
-  bubbleTextMe: { color: Colors.white },
+  bubbleText: { fontSize: 14, fontFamily: Font.regular, color: C.black, lineHeight: 20 },
+  bubbleTextMe: { color: C.white },
 
   // Input bar
   inputBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderTopWidth: 1, borderTopColor: Colors.black,
-    backgroundColor: Colors.white, padding: 12,
+    borderTopWidth: 1, borderTopColor: C.black,
+    backgroundColor: C.white, padding: 12,
   },
   input: {
     flex: 1, height: SEND_BTN,
-    borderWidth: 1, borderColor: Colors.black,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card,
     paddingHorizontal: 12,
-    fontSize: 14, fontFamily: Font.regular, color: Colors.black,
+    fontSize: 14, fontFamily: Font.regular, color: C.black,
     textAlignVertical: 'center',
     paddingTop: 8, paddingBottom: 0,
   },
@@ -307,8 +312,8 @@ const styles = StyleSheet.create({
   sendButton: {
     width: SEND_BTN, height: SEND_BTN,
     borderRadius: Radius.card,
-    backgroundColor: Colors.teal,
-    borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.teal,
+    borderWidth: 1, borderColor: C.black,
     justifyContent: 'center', alignItems: 'center',
   },
-});
+}); }

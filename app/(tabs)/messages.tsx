@@ -1,9 +1,10 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { useThreads } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
 
 const REQUESTS = [
   { id: '4', name: 'Sasha Volkov', book: 'Dune', requestedDate: 'Mar 12', duration: '3 weeks', incoming: true },
@@ -19,6 +20,10 @@ function formatTime(ts: number): string {
 }
 
 export default function MessagesScreen() {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
+
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
   const [tabBarWidth, setTabBarWidth] = useState(0);
   const indicatorX = useRef(new Animated.Value(0)).current;
@@ -128,67 +133,69 @@ export default function MessagesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
-  container: { flex: 1, padding: 16 },
-  heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black, marginBottom: 16 },
+function makeStyles(C: ReturnType<typeof getColors>) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: C.background },
+    container: { flex: 1, padding: 16 },
+    heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: C.black, marginBottom: 16 },
 
-  // Tab bar with sliding indicator
-  tabBar: {
-    flexDirection: 'row',
-    position: 'relative',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.white,
-    marginBottom: 16,
-    padding: 3,
-  },
-  tabIndicator: {
-    position: 'absolute',
-    top: 3, bottom: 3, left: 3,
-    backgroundColor: Colors.black,
-    borderRadius: Radius.pill,
-  },
-  tab: {
-    flex: 1, flexDirection: 'row',
-    justifyContent: 'center', alignItems: 'center',
-    gap: 6, paddingVertical: 8,
-    borderRadius: Radius.pill,
-    zIndex: 1,
-  },
-  tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.gray },
-  tabTextActive: { color: Colors.white },
+    // Tab bar with sliding indicator
+    tabBar: {
+      flexDirection: 'row',
+      position: 'relative',
+      borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.pill,
+      backgroundColor: C.white,
+      marginBottom: 16,
+      padding: 3,
+    },
+    tabIndicator: {
+      position: 'absolute',
+      top: 3, bottom: 3, left: 3,
+      backgroundColor: C.black,
+      borderRadius: Radius.pill,
+    },
+    tab: {
+      flex: 1, flexDirection: 'row',
+      justifyContent: 'center', alignItems: 'center',
+      gap: 6, paddingVertical: 8,
+      borderRadius: Radius.pill,
+      zIndex: 1,
+    },
+    tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.gray },
+    tabTextActive: { color: Colors.white },
 
-  badge: {
-    backgroundColor: Colors.purple, borderRadius: Radius.pill,
-    minWidth: 18, height: 18,
-    justifyContent: 'center', alignItems: 'center',
-    paddingHorizontal: 5,
-  },
-  badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+    badge: {
+      backgroundColor: C.purple, borderRadius: Radius.pill,
+      minWidth: 18, height: 18,
+      justifyContent: 'center', alignItems: 'center',
+      paddingHorizontal: 5,
+    },
+    badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
 
-  list: { gap: 10, paddingBottom: 32 },
-  row: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
-    padding: 12, gap: 12,
-  },
-  rowInfo: { flex: 1, gap: 3 },
-  rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rowName: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
-  rowNameUnread: { fontFamily: Font.extraBold },
-  rowTime: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  rowSubtitle: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  rowPreview: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
-  unreadDot: {
-    width: 10, height: 10, borderRadius: 5,
-    backgroundColor: Colors.teal,
-    borderWidth: 1, borderColor: Colors.black,
-  },
-  incomingDot: {
-    width: 10, height: 10, borderRadius: 5,
-    backgroundColor: Colors.purple,
-    borderWidth: 1, borderColor: Colors.black,
-  },
-});
+    list: { gap: 10, paddingBottom: 32 },
+    row: {
+      flexDirection: 'row', alignItems: 'center',
+      borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.card, backgroundColor: C.white,
+      padding: 12, gap: 12,
+    },
+    rowInfo: { flex: 1, gap: 3 },
+    rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    rowName: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
+    rowNameUnread: { fontFamily: Font.extraBold },
+    rowTime: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+    rowSubtitle: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+    rowPreview: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
+    unreadDot: {
+      width: 10, height: 10, borderRadius: 5,
+      backgroundColor: C.teal,
+      borderWidth: 1, borderColor: C.black,
+    },
+    incomingDot: {
+      width: 10, height: 10, borderRadius: 5,
+      backgroundColor: C.purple,
+      borderWidth: 1, borderColor: C.black,
+    },
+  });
+}

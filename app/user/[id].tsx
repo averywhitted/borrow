@@ -1,11 +1,13 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { useMemo } from 'react';
+import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { getOrCreateThread } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
 
 // Placeholder user data — will come from API
 type UserBook = { id: string; title: string; author: string; available: boolean };
@@ -67,6 +69,10 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const user = USERS[id] ?? USERS['jaydon'];
 
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
+
   const handleMessage = () => {
     const thread = getOrCreateThread(user.id, user.name);
     router.push(`/thread/${thread.id}`);
@@ -81,7 +87,7 @@ export default function UserProfileScreen() {
 
         {/* Back */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={20} color={Colors.black} />
+          <MaterialIcons name="arrow-back" size={20} color={C.black} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
 
@@ -92,7 +98,7 @@ export default function UserProfileScreen() {
             <View style={styles.profileInfo}>
               <Text style={styles.name}>{user.name}</Text>
               <View style={styles.locationRow}>
-                <MaterialIcons name="place" size={12} color={Colors.gray} />
+                <MaterialIcons name="place" size={12} color={C.gray} />
                 <Text style={styles.location}>{user.location}</Text>
               </View>
               <View style={styles.ratingRow}>
@@ -101,7 +107,7 @@ export default function UserProfileScreen() {
               </View>
             </View>
             <AnimatedButton style={[styles.msgBtn, Shadow]} onPress={handleMessage}>
-              <MaterialIcons name="chat-bubble-outline" size={16} color={Colors.white} />
+              <MaterialIcons name="chat-bubble-outline" size={16} color={C.white} />
               <Text style={styles.msgBtnText}>Message</Text>
             </AnimatedButton>
           </View>
@@ -116,12 +122,12 @@ export default function UserProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Text style={[styles.statValue, { color: Colors.teal }]}>{user.stats.lends}</Text>
+              <Text style={[styles.statValue, { color: C.teal }]}>{user.stats.lends}</Text>
               <Text style={styles.statLabel}>Lends</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Text style={[styles.statValue, { color: Colors.purple }]}>{user.stats.borrows}</Text>
+              <Text style={[styles.statValue, { color: C.purple }]}>{user.stats.borrows}</Text>
               <Text style={styles.statLabel}>Borrows</Text>
             </View>
           </View>
@@ -172,69 +178,69 @@ export default function UserProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: C.background },
   content: { padding: 16, paddingBottom: 32 },
 
   backButton: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
-  backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
+  backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
 
   profileCard: {
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
     padding: 14, marginBottom: 24, gap: 12,
   },
   profileTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   profileInfo: { flex: 1, gap: 4 },
-  name: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
+  name: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  location: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  location: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  ratingText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '700', color: Colors.gray },
+  ratingText: { fontSize: 12, fontFamily: Font.bold, fontWeight: '700', color: C.gray },
 
   msgBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: Colors.teal, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.teal, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 8,
     alignSelf: 'flex-start',
   },
-  msgBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  msgBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: C.white },
 
-  bio: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray, lineHeight: 19 },
+  bio: { fontSize: 13, fontFamily: Font.regular, color: C.gray, lineHeight: 19 },
 
   statsRow: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.background,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.background,
     ...Shadow,
   },
   stat: { flex: 1, alignItems: 'center', paddingVertical: 8 },
-  statValue: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  statLabel: { fontSize: 10, fontFamily: Font.regular, color: Colors.gray, marginTop: 1 },
-  statDivider: { width: 1, alignSelf: 'stretch', marginVertical: 6, backgroundColor: Colors.lightGray },
+  statValue: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+  statLabel: { fontSize: 10, fontFamily: Font.regular, color: C.gray, marginTop: 1 },
+  statDivider: { width: 1, alignSelf: 'stretch', marginVertical: 6, backgroundColor: C.lightGray },
 
   sectionTitle: {
     fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
-    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
+    color: C.gray, textTransform: 'uppercase', letterSpacing: 0.8,
     marginBottom: 10,
   },
   bookRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
     padding: 12, marginBottom: 10,
   },
   bookInfo: { flex: 1, gap: 3 },
-  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  bookTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: C.black },
+  bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   requestBtn: {
-    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.purple, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,
   },
-  requestBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  requestBtnText: { fontSize: 12, fontWeight: '700', fontFamily: Font.bold, color: C.white },
   onLoanPill: {
-    borderWidth: 1, borderColor: Colors.lightGray,
+    borderWidth: 1, borderColor: C.lightGray,
     borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 6,
   },
-  onLoanText: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
-});
+  onLoanText: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
+}); }

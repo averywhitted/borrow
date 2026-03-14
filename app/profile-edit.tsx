@@ -1,14 +1,14 @@
 import {
   ScrollView, View, Text, TextInput, TouchableOpacity,
   StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform,
-  Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Colors, Shadow, Radius, Font } from '../constants/theme';
 import { Avatar } from '../components/Avatar';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { SlidingSelector } from '../components/SlidingSelector';
 
 const GENRE_OPTIONS = ['Literary Fiction', 'Sci-Fi', 'Fantasy', 'Mystery', 'Horror', 'Romance', 'LGBTQ+', 'Nonfiction', 'History', 'Biography'];
 const WINDOW_OPTIONS = ['1 week', '2 weeks', '1 month'];
@@ -16,78 +16,6 @@ const BIO_SUGGESTIONS = [
   'Tell neighbors about your reading life…',
   "e.g. \"Big sci-fi fan. I lend happily — just return on time 😄\"",
 ];
-
-// ── Animated sliding pill selector (same pattern as library tab) ───────────────
-function SlidingSelector({
-  options,
-  selected,
-  onSelect,
-}: {
-  options: string[];
-  selected: string;
-  onSelect: (opt: string) => void;
-}) {
-  const [barWidth, setBarWidth] = useState(0);
-  const indicatorX = useRef(new Animated.Value(0)).current;
-  const slotW = barWidth > 0 ? (barWidth - 8) / options.length : 0;
-
-  const handleLayout = (e: { nativeEvent: { layout: { width: number } } }) => {
-    const w = e.nativeEvent.layout.width;
-    setBarWidth(w);
-    const tw = (w - 8) / options.length;
-    indicatorX.setValue(options.indexOf(selected) * tw);
-  };
-
-  const handleSelect = (opt: string, idx: number) => {
-    if (slotW === 0) return;
-    Animated.timing(indicatorX, {
-      toValue: idx * slotW,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-    onSelect(opt);
-  };
-
-  return (
-    <View style={slStyles.container} onLayout={handleLayout}>
-      {slotW > 0 && (
-        <Animated.View
-          style={[slStyles.indicator, { width: slotW, transform: [{ translateX: indicatorX }] }]}
-        />
-      )}
-      {options.map((opt, idx) => (
-        <TouchableOpacity
-          key={opt}
-          style={slStyles.tab}
-          onPress={() => handleSelect(opt, idx)}
-          activeOpacity={0.7}
-        >
-          <Text style={[slStyles.tabText, selected === opt && slStyles.tabTextActive]}>
-            {opt}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
-const slStyles = StyleSheet.create({
-  container: {
-    flexDirection: 'row', position: 'relative',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, padding: 4,
-    backgroundColor: Colors.white,
-    ...Shadow,
-  },
-  indicator: {
-    position: 'absolute', top: 4, bottom: 4, left: 4,
-    backgroundColor: '#555',
-    borderRadius: Radius.pill,
-  },
-  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
-  tabText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600', color: Colors.gray },
-  tabTextActive: { color: Colors.white },
-});
 
 // ── Screen ─────────────────────────────────────────────────────────────────────
 export default function ProfileEditScreen() {

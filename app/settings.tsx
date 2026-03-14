@@ -1,88 +1,17 @@
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated,
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState, useRef } from 'react';
 import { Shadow, Radius, Font, getColors } from '../constants/theme';
 import { ThemePref, setThemePref, useIsDark, useThemePref } from '../store/theme';
+import { SlidingSelector } from '../components/SlidingSelector';
 
-const THEME_OPTIONS: { key: ThemePref; label: string; icon: string }[] = [
+const THEME_OPTIONS: { key: ThemePref; label: string; icon: React.ComponentProps<typeof MaterialIcons>['name'] }[] = [
   { key: 'light',  label: 'Light',  icon: 'light-mode' },
   { key: 'dark',   label: 'Dark',   icon: 'dark-mode' },
   { key: 'system', label: 'Device', icon: 'smartphone' },
 ];
-
-// ── Animated sliding pill selector (shared pattern) ───────────────────────────
-function SlidingSelector({
-  options,
-  selected,
-  onSelect,
-  isDark,
-}: {
-  options: { key: string; label: string; icon: string }[];
-  selected: string;
-  onSelect: (key: string) => void;
-  isDark: boolean;
-}) {
-  const C = getColors(isDark);
-  const [barWidth, setBarWidth] = useState(0);
-  const indicatorX = useRef(new Animated.Value(0)).current;
-  const slotW = barWidth > 0 ? (barWidth - 8) / options.length : 0;
-
-  const handleLayout = (e: { nativeEvent: { layout: { width: number } } }) => {
-    const w = e.nativeEvent.layout.width;
-    setBarWidth(w);
-    const tw = (w - 8) / options.length;
-    indicatorX.setValue(options.findIndex(o => o.key === selected) * tw);
-  };
-
-  const handleSelect = (key: string, idx: number) => {
-    if (slotW === 0) return;
-    Animated.timing(indicatorX, {
-      toValue: idx * slotW,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-    onSelect(key);
-  };
-
-  return (
-    <View
-      style={[
-        styles.selectorContainer,
-        { borderColor: C.black, backgroundColor: C.white, ...Shadow },
-      ]}
-      onLayout={handleLayout}
-    >
-      {slotW > 0 && (
-        <Animated.View
-          style={[
-            styles.selectorIndicator,
-            { width: slotW, backgroundColor: isDark ? '#999' : '#555', transform: [{ translateX: indicatorX }] },
-          ]}
-        />
-      )}
-      {options.map((opt, idx) => (
-        <TouchableOpacity
-          key={opt.key}
-          style={styles.selectorTab}
-          onPress={() => handleSelect(opt.key, idx)}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name={opt.icon as any}
-            size={16}
-            color={selected === opt.key ? C.white : C.gray}
-          />
-          <Text style={[styles.selectorTabText, { color: selected === opt.key ? C.white : C.gray }]}>
-            {opt.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
 
 // ── Settings row ──────────────────────────────────────────────────────────────
 function SettingsRow({
@@ -132,7 +61,6 @@ export default function SettingsScreen() {
             options={THEME_OPTIONS}
             selected={pref}
             onSelect={(key) => setThemePref(key as ThemePref)}
-            isDark={isDark}
           />
         </View>
       </View>
@@ -182,21 +110,6 @@ const styles = StyleSheet.create({
   },
   settingTitle: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold },
   settingDesc: { fontSize: 12, fontFamily: Font.regular, marginTop: -4 },
-
-  selectorContainer: {
-    flexDirection: 'row', position: 'relative',
-    borderWidth: 1, borderRadius: Radius.pill,
-    padding: 4, marginTop: 4,
-  },
-  selectorIndicator: {
-    position: 'absolute', top: 4, bottom: 4, left: 4,
-    borderRadius: Radius.pill,
-  },
-  selectorTab: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 5, paddingVertical: 9, zIndex: 1,
-  },
-  selectorTabText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600' },
 
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 14,

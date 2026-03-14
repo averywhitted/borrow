@@ -1,14 +1,15 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useState } from 'react';
-import { Colors, Shadow, Radius, Font } from '../../constants/theme';
+import { useState, useMemo } from 'react';
+import { Colors, Shadow, Radius, Font, getColors } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
 import { useBook, markReceived } from '../../store/library';
 import { getThread } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
 
 // ── Static book metadata ───────────────────────────────────────────────────────
 
@@ -98,6 +99,10 @@ export default function BookDetailScreen() {
   const [showExtend, setShowExtend] = useState(false);
   const [extendOption, setExtendOption] = useState<ExtendKey>('+2w');
 
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
+
   const displayTitle = myBook?.title ?? bookData.title;
   const displayAuthor = myBook?.author ?? bookData.author;
 
@@ -106,7 +111,7 @@ export default function BookDetailScreen() {
 
   const isLending = myBook?.status === 'lending' || myBook?.status === 'overdue';
   const isBorrowing = myBook?.status === 'borrowing';
-  const statusColor = myBook?.status === 'overdue' ? '#C0392B' : isLending ? Colors.teal : isBorrowing ? Colors.purple : Colors.gray;
+  const statusColor = myBook?.status === 'overdue' ? '#C0392B' : isLending ? C.teal : isBorrowing ? C.purple : C.gray;
   const statusLabel = myBook?.status === 'overdue' ? 'Overdue' : isLending ? 'Lending' : isBorrowing ? 'Borrowing' : 'In Library';
   const history = myBook ? (BOOK_HISTORY[id] ?? []) : [];
 
@@ -126,7 +131,7 @@ export default function BookDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
 
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={20} color={Colors.black} />
+          <MaterialIcons name="arrow-back" size={20} color={C.black} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
 
@@ -172,7 +177,7 @@ export default function BookDetailScreen() {
                   {isLending ? 'Lent to' : 'Borrowed from'}{' '}
                 </Text>
                 <Text style={styles.neighborLinkName}>{neighborName}</Text>
-                <MaterialIcons name="chevron-right" size={13} color={Colors.gray} />
+                <MaterialIcons name="chevron-right" size={13} color={C.gray} />
               </TouchableOpacity>
             )}
           </View>
@@ -186,10 +191,10 @@ export default function BookDetailScreen() {
         {myBook && (isLending || isBorrowing) && (
           <View style={styles.actionArea}>
             <AnimatedButton
-              style={[styles.mainActionBtn, { backgroundColor: isLending ? Colors.teal : Colors.purple }, Shadow]}
+              style={[styles.mainActionBtn, { backgroundColor: isLending ? C.teal : C.purple }, Shadow]}
               onPress={() => setConfirmAction(isLending ? 'received' : 'return')}
             >
-              <MaterialIcons name={isLending ? 'check' : 'undo'} size={16} color={Colors.white} />
+              <MaterialIcons name={isLending ? 'check' : 'undo'} size={16} color={C.white} />
               <Text style={styles.mainActionBtnText}>
                 {isLending ? 'Mark Received' : 'Arrange Return'}
               </Text>
@@ -199,7 +204,7 @@ export default function BookDetailScreen() {
                 style={[styles.extendBtn, Shadow]}
                 onPress={() => setShowExtend(true)}
               >
-                <MaterialIcons name="event" size={14} color={Colors.black} />
+                <MaterialIcons name="event" size={14} color={C.black} />
                 <Text style={styles.extendBtnText}>Extend Borrow</Text>
               </AnimatedButton>
             )}
@@ -214,7 +219,7 @@ export default function BookDetailScreen() {
               {history.map((entry, i) => (
                 <View key={i} style={styles.timelineRow}>
                   <View style={styles.timelineLeft}>
-                    <View style={[styles.timelineDot, { backgroundColor: entry.type === 'lent' ? Colors.teal : Colors.purple }]} />
+                    <View style={[styles.timelineDot, { backgroundColor: entry.type === 'lent' ? C.teal : C.purple }]} />
                     {i < history.length - 1 && <View style={styles.timelineConnector} />}
                   </View>
                   <View style={styles.timelineBody}>
@@ -240,7 +245,7 @@ export default function BookDetailScreen() {
                 <View style={styles.lenderInfo}>
                   <Text style={styles.lenderName}>{lender.name}</Text>
                   <View style={styles.lenderMeta}>
-                    <MaterialIcons name="place" size={11} color={Colors.gray} />
+                    <MaterialIcons name="place" size={11} color={C.gray} />
                     <Text style={styles.lenderDistance}>{lender.distance} away</Text>
                   </View>
                   <View style={styles.lenderStats}>
@@ -280,7 +285,7 @@ export default function BookDetailScreen() {
             style={[styles.bookmarkButton, saved && styles.bookmarkButtonSaved, Shadow]}
             onPress={() => toggleWishlist({ id, title: displayTitle, author: displayAuthor })}
           >
-            <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? Colors.white : Colors.black} />
+            <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? C.white : C.black} />
           </AnimatedButton>
           <AnimatedButton style={[styles.borrowButton, Shadow]}>
             <Text style={styles.borrowButtonText}>Request to Borrow</Text>
@@ -305,7 +310,7 @@ export default function BookDetailScreen() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </AnimatedButton>
               <AnimatedButton
-                style={[styles.modalConfirm, { backgroundColor: confirmAction === 'received' ? Colors.teal : Colors.purple }, Shadow]}
+                style={[styles.modalConfirm, { backgroundColor: confirmAction === 'received' ? C.teal : C.purple }, Shadow]}
                 onPress={() => {
                   if (confirmAction === 'received') {
                     markReceived(id);
@@ -359,7 +364,7 @@ export default function BookDetailScreen() {
               <AnimatedButton style={[styles.modalCancel, Shadow]} onPress={() => setShowExtend(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </AnimatedButton>
-              <AnimatedButton style={[styles.modalConfirm, { backgroundColor: Colors.purple }, Shadow]} onPress={handleExtendConfirm}>
+              <AnimatedButton style={[styles.modalConfirm, { backgroundColor: C.purple }, Shadow]} onPress={handleExtendConfirm}>
                 <Text style={styles.modalConfirmText}>Send Request</Text>
               </AnimatedButton>
             </View>
@@ -371,29 +376,29 @@ export default function BookDetailScreen() {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: C.background },
   content: { padding: 16, paddingBottom: 32 },
 
   backButton: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
-  backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: Colors.black },
+  backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
 
   // Book header
   bookHeader: { flexDirection: 'row', gap: 14, marginBottom: 20 },
   bookMeta: { flex: 1, gap: 6 },
   genrePill: {
-    alignSelf: 'flex-start', borderWidth: 1, borderColor: Colors.black,
+    alignSelf: 'flex-start', borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 3,
-    backgroundColor: Colors.white,
+    backgroundColor: C.white,
   },
-  genreText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
-  bookTitle: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black, lineHeight: 24 },
+  genreText: { fontSize: 11, fontWeight: '700', fontFamily: Font.bold, color: C.black },
+  bookTitle: { fontSize: 20, fontWeight: '800', fontFamily: Font.extraBold, color: C.black, lineHeight: 24 },
 
   // Inline stats row
   inlineStats: { flexDirection: 'row', alignItems: 'center', gap: 5, flexWrap: 'wrap' },
-  inlineAuthor: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
-  inlineStat: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  inlineDot: { fontSize: 11, color: Colors.lightGray },
+  inlineAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
+  inlineStat: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+  inlineDot: { fontSize: 11, color: C.lightGray },
 
   // Status
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
@@ -402,95 +407,95 @@ const styles = StyleSheet.create({
 
   // Neighbor link
   neighborLink: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingVertical: 2 },
-  neighborLinkLabel: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  neighborLinkName: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', color: Colors.gray },
+  neighborLinkLabel: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+  neighborLinkName: { fontSize: 11, fontFamily: Font.bold, fontWeight: '700', color: C.gray },
 
   // About
   sectionTitle: {
     fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
-    color: Colors.gray, textTransform: 'uppercase', letterSpacing: 0.8,
+    color: C.gray, textTransform: 'uppercase', letterSpacing: 0.8,
     marginBottom: 8,
   },
-  description: { fontSize: 14, fontFamily: Font.regular, color: Colors.black, lineHeight: 21, marginBottom: 20 },
+  description: { fontSize: 14, fontFamily: Font.regular, color: C.black, lineHeight: 21, marginBottom: 20 },
 
   // Action area
   actionArea: { alignItems: 'center', gap: 10, marginBottom: 24 },
   mainActionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderWidth: 1, borderColor: Colors.black,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingVertical: 14, paddingHorizontal: 28,
     alignSelf: 'stretch',
   },
-  mainActionBtnText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
+  mainActionBtnText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: C.white },
   extendBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderColor: Colors.black,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingVertical: 10, paddingHorizontal: 20,
-    backgroundColor: Colors.white,
+    backgroundColor: C.white,
   },
-  extendBtnText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  extendBtnText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.black },
 
   // History timeline
   timeline: { marginBottom: 24 },
   timelineRow: { flexDirection: 'row', gap: 12 },
   timelineLeft: { alignItems: 'center', width: 14 },
-  timelineDot: { width: 10, height: 10, borderRadius: 5, marginTop: 3, borderWidth: 1, borderColor: Colors.black },
-  timelineConnector: { flex: 1, width: 2, backgroundColor: Colors.lightGray, marginVertical: 3 },
+  timelineDot: { width: 10, height: 10, borderRadius: 5, marginTop: 3, borderWidth: 1, borderColor: C.black },
+  timelineConnector: { flex: 1, width: 2, backgroundColor: C.lightGray, marginVertical: 3 },
   timelineBody: { flex: 1, paddingBottom: 16 },
-  timelineEvent: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
-  timelinePerson: { fontFamily: Font.bold, fontWeight: '700', color: Colors.black },
-  timelineDates: { fontSize: 11, fontFamily: Font.regular, color: Colors.lightGray, marginTop: 2 },
+  timelineEvent: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
+  timelinePerson: { fontFamily: Font.bold, fontWeight: '700', color: C.black },
+  timelineDates: { fontSize: 11, fontFamily: Font.regular, color: C.lightGray, marginTop: 2 },
 
   // Lenders
   lendersSectionTitle: {
     fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold,
-    color: Colors.black, marginBottom: 12,
+    color: C.black, marginBottom: 12,
   },
   lenderCard: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
     padding: 12, marginBottom: 10, gap: 12,
   },
   lenderInfo: { flex: 1, gap: 3 },
-  lenderName: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  lenderName: { fontSize: 14, fontWeight: '700', fontFamily: Font.bold, color: C.black },
   lenderMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  lenderDistance: { fontSize: 12, fontFamily: Font.regular, color: Colors.gray },
+  lenderDistance: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   lenderStats: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  lenderStat: { fontSize: 11, fontFamily: Font.regular, color: Colors.gray },
-  lenderStatDot: { fontSize: 11, color: Colors.lightGray },
+  lenderStat: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+  lenderStatDot: { fontSize: 11, color: C.lightGray },
   requestButton: {
-    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.purple, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,
   },
-  requestButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
+  requestButtonText: { color: C.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
   unavailableBtn: {
-    borderWidth: 1, borderColor: Colors.black,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,
-    backgroundColor: Colors.lightGray,
+    backgroundColor: C.lightGray,
   },
-  unavailableText: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray },
+  unavailableText: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
 
   // Bottom bar (browse mode)
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'row', gap: 10,
-    padding: 16, backgroundColor: Colors.white,
-    borderTopWidth: 1, borderTopColor: Colors.black,
+    padding: 16, backgroundColor: C.white,
+    borderTopWidth: 1, borderTopColor: C.black,
   },
   bookmarkButton: {
     width: 50, height: 50,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
   },
-  bookmarkButtonSaved: { backgroundColor: Colors.teal },
+  bookmarkButtonSaved: { backgroundColor: C.teal },
   borrowButton: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: Colors.purple, borderWidth: 1, borderColor: Colors.black,
+    backgroundColor: C.purple, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingVertical: 14,
   },
-  borrowButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.white },
+  borrowButtonText: { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: C.white },
 
   // Confirm / Extend modals
   modalOverlay: {
@@ -498,34 +503,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', padding: 24,
   },
   modalBox: {
-    width: '100%', backgroundColor: Colors.white,
-    borderWidth: 1, borderColor: Colors.black,
+    width: '100%', backgroundColor: C.white,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, padding: 20, gap: 12,
   },
-  modalTitle: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: Colors.black },
-  modalSubtitle: { fontSize: 13, fontFamily: Font.regular, color: Colors.gray, lineHeight: 19 },
+  modalTitle: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+  modalSubtitle: { fontSize: 13, fontFamily: Font.regular, color: C.gray, lineHeight: 19 },
   modalButtons: { flexDirection: 'row', gap: 10, marginTop: 4 },
   modalCancel: {
     flex: 1, alignItems: 'center', paddingVertical: 12,
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.card, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.card, backgroundColor: C.white,
   },
-  modalCancelText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.black },
+  modalCancelText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.black },
   modalConfirm: {
     flex: 1, alignItems: 'center', paddingVertical: 12,
-    borderWidth: 1, borderColor: Colors.black,
+    borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card,
   },
-  modalConfirmText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+  modalConfirmText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.white },
 
   // Extend options
   extendOptions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   extendChip: {
-    borderWidth: 1, borderColor: Colors.black,
-    borderRadius: Radius.pill, backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: C.black,
+    borderRadius: Radius.pill, backgroundColor: C.white,
     paddingHorizontal: 16, paddingVertical: 8,
   },
   extendChipActive: { backgroundColor: '#555' },
-  extendChipText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600', color: Colors.black },
-  extendChipTextActive: { color: Colors.white },
-});
+  extendChipText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600', color: C.black },
+  extendChipTextActive: { color: C.white },
+}); }
