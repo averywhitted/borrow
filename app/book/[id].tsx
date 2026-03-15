@@ -2,7 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Mod
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { Avatar } from '../../components/Avatar';
 import { AnimatedButton } from '../../components/AnimatedButton';
@@ -319,7 +319,13 @@ export default function BookDetailScreen() {
           >
             <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? C.white : C.black} />
           </AnimatedButton>
-          <AnimatedButton style={[styles.borrowButton, getShadow(isDark)]}>
+          <AnimatedButton
+            style={[styles.borrowButton, getShadow(isDark)]}
+            onPress={() => {
+              const firstAvailable = LENDERS.find(l => l.available);
+              if (firstAvailable) router.push(`/borrow-request/${firstAvailable.id}`);
+            }}
+          >
             <Text style={styles.borrowButtonText}>Request to Borrow</Text>
           </AnimatedButton>
         </View>

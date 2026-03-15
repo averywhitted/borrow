@@ -88,6 +88,46 @@ const threadStore: Thread[] = [
       { id: 'm2', fromMe: false, text: 'No worries at all, take your time with it.' },
     ],
   },
+  // Request threads — match IDs used in messages.tsx REQUESTS array
+  {
+    id: '4',
+    neighborId: 'sasha',
+    neighborName: 'Sasha Volkov',
+    lastUpdated: NOW - 3 * 60 * 60 * 1000,
+    borrowingCount: 0,
+    lendingCount: 0,
+    unread: true,
+    messages: [
+      {
+        id: 'm1', fromMe: false, text: null, isRequestCard: true,
+        requestData: {
+          id: 'req4', fromName: 'Sasha Volkov',
+          bookTitle: 'Dune', bookAuthor: 'Frank Herbert',
+          fromDate: 'Mar 12', untilDate: 'Apr 2', status: 'pending',
+        },
+      },
+      { id: 'm2', fromMe: false, text: 'Hi! I saw you have Dune available — would love to borrow it!' },
+    ],
+  },
+  {
+    id: '5',
+    neighborId: 'lily',
+    neighborName: 'Lily Chen',
+    lastUpdated: NOW - 5 * 60 * 60 * 1000,
+    borrowingCount: 0,
+    lendingCount: 0,
+    messages: [
+      {
+        id: 'm1', fromMe: true, text: null, isRequestCard: true,
+        requestData: {
+          id: 'req5', fromName: 'Avery Whitted',
+          bookTitle: 'Kindred', bookAuthor: 'Octavia Butler',
+          fromDate: 'Mar 10', untilDate: 'Apr 7', status: 'pending',
+        },
+      },
+      { id: 'm2', fromMe: true, text: "Hi Lily! Just sent a borrow request for Kindred — excited to finally read it 🙏" },
+    ],
+  },
 ];
 
 // ─── Simple pub/sub for React re-renders ─────────────────────────────────────
@@ -101,7 +141,7 @@ function notify() {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 export function getAllThreads(): Thread[] {
-  return threadStore;
+  return [...threadStore];
 }
 
 export function getThread(threadId: string): Thread | undefined {
@@ -183,7 +223,7 @@ export function useThreads(): Thread[] {
     listeners.add(update);
     return () => { listeners.delete(update); };
   }, []);
-  return threadStore;
+  return [...threadStore];
 }
 
 export function useThread(threadId: string): Thread | undefined {

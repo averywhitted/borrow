@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, Stack } from 'expo-router';
 import { useMemo } from 'react';
-import { Font, Radius, Shadow, getColors, getShadow } from '../constants/theme';
+import { Font, Radius, getColors, getShadow } from '../constants/theme';
 import { useIsDark } from '../store/theme';
 import { AnimatedButton } from '../components/AnimatedButton';
 

@@ -4,17 +4,19 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
-import { Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors } from '../../constants/theme';
 import { useIsDark } from '../../store/theme';
 import { useThread } from '../../store/threads';
-import { AnimatedButton } from '../../components/AnimatedButton';
 
 export default function ThreadSettingsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // Guard: id may come as string[] from query params
+  const params = useLocalSearchParams<{ id: string | string[] }>();
+  const threadId = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const isDark = useIsDark();
   const C = getColors(isDark);
   const styles = useMemo(() => makeStyles(C), [isDark]);
-  const thread = useThread(id);
+  const thread = useThread(threadId);
 
   const [muted, setMuted] = useState(false);
 
@@ -51,8 +53,8 @@ export default function ThreadSettingsScreen() {
         {
           text: 'Delete', style: 'destructive',
           onPress: () => {
-            // TODO: wire to backend
-            router.navigate('/(tabs)/messages');
+            // TODO: wire to backend — replace so the thread screen is removed from stack
+            router.replace('/(tabs)/messages');
           },
         },
       ],
@@ -89,7 +91,7 @@ export default function ThreadSettingsScreen() {
                 <Text style={[styles.personName, { color: C.black }]}>{neighborName}</Text>
                 <Text style={[styles.personSub, { color: C.gray }]}>View profile →</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={18} color={C.lightGray} />
+              <MaterialIcons name="chevron-right" size={18} color={C.gray} />
             </TouchableOpacity>
           </View>
         </View>
@@ -124,6 +126,7 @@ export default function ThreadSettingsScreen() {
               color={C.gray}
               borderColor={C.lightGray}
               onPress={handleReport}
+              styles={styles}
             />
             <ActionRow
               icon="block"
@@ -131,6 +134,7 @@ export default function ThreadSettingsScreen() {
               color="#E53935"
               borderColor={C.lightGray}
               onPress={handleBlock}
+              styles={styles}
             />
             <ActionRow
               icon="delete-outline"
@@ -139,6 +143,7 @@ export default function ThreadSettingsScreen() {
               borderColor="transparent"
               onPress={handleDelete}
               last
+              styles={styles}
             />
           </View>
         </View>
@@ -149,10 +154,11 @@ export default function ThreadSettingsScreen() {
 }
 
 function ActionRow({
-  icon, label, color, borderColor, onPress, last,
+  icon, label, color, borderColor, onPress, last, styles,
 }: {
   icon: string; label: string; color: string;
   borderColor: string; onPress: () => void; last?: boolean;
+  styles: ReturnType<typeof makeStyles>;
 }) {
   return (
     <TouchableOpacity
@@ -210,11 +216,3 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     actionLabel: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold },
   });
 }
-
-const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    paddingHorizontal: 16, paddingVertical: 14,
-  },
-  actionLabel: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold },
-});

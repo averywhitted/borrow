@@ -15,6 +15,7 @@ import { useIsDark } from '../../store/theme';
 const LENDERS: Record<string, { name: string; distance: string }> = {
   '1': { name: 'Jaydon Workman', distance: '0.3 mi' },
   '2': { name: 'Priya Okonkwo', distance: '0.6 mi' },
+  '3': { name: 'Carlos Reyes', distance: '1.1 mi' },
   '4': { name: 'Sasha Volkov', distance: '1.4 mi' },
 };
 
@@ -64,9 +65,9 @@ export default function BorrowRequestScreen() {
       note: note.trim() || undefined,
       status: 'pending',
     });
-    // Close modal and navigate to the thread
-    router.back();
-    router.push(`/thread/${thread.id}`);
+    // Dismiss modal and navigate to the thread
+    router.dismiss();
+    router.navigate(`/thread/${thread.id}`);
   };
 
   return (

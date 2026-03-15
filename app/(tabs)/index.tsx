@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
@@ -56,7 +56,7 @@ function BookmarkButton({ book, onPress }: { book: Book; onPress: () => void }) 
       style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, getShadow(isDark)]}
       onPress={onPress}
     >
-      <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={Colors.white} />
+      <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color="#FFFFFF" />
       {!saved && <Text style={styles.wishlistPlus}>+</Text>}
     </AnimatedButton>
   );
@@ -249,7 +249,7 @@ export default function HomeScreen() {
               style={[
                 styles.genrePill,
                 activeGenre === genre && styles.genrePillActive,
-                Shadow,
+                getShadow(isDark),
               ]}
               onPress={() => setActiveGenre(activeGenre === genre ? null : genre)}
             >

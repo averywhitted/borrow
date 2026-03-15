@@ -2,7 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView } fr
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';

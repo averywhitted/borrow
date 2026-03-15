@@ -2,7 +2,7 @@ import { ScrollView, View, Text, StyleSheet, SafeAreaView, TouchableOpacity } fr
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsDark } from '../../store/theme';
@@ -10,12 +10,12 @@ import { useIsDark } from '../../store/theme';
 // Hardcoded for now — will derive from library + auth store
 const STATS = { books: 6, lending: 2, borrowing: 2 };
 
-const ACTIVITY = [
-  { icon: 'call-made',     text: 'Lent Piranesi to Jaydon Workman',           time: 'Mar 10', color: Colors.teal,   threadId: '1' },
-  { icon: 'call-received', text: 'Borrowed Normal People from Jaydon Workman', time: 'Mar 1',  color: Colors.purple, threadId: '1' },
-  { icon: 'check-circle',  text: 'Received Kindred back from Priya Okonkwo',   time: 'Feb 20', color: Colors.teal,   threadId: '2' },
-  { icon: 'warning',       text: 'The Remains of the Day is overdue',           time: 'Mar 1',  color: '#C0392B',     threadId: '2' },
-] as const;
+const ACTIVITY: Array<{ icon: string; text: string; time: string; colorKey: 'teal' | 'purple' | 'danger'; threadId: string }> = [
+  { icon: 'call-made',     text: 'Lent Piranesi to Jaydon Workman',           time: 'Mar 10', colorKey: 'teal',   threadId: '1' },
+  { icon: 'call-received', text: 'Borrowed Normal People from Jaydon Workman', time: 'Mar 1',  colorKey: 'purple', threadId: '1' },
+  { icon: 'check-circle',  text: 'Received Kindred back from Priya Okonkwo',   time: 'Feb 20', colorKey: 'teal',   threadId: '2' },
+  { icon: 'warning',       text: 'The Remains of the Day is overdue',           time: 'Mar 1',  colorKey: 'danger', threadId: '2' },
+];
 
 // Friends = neighbors with whom at least one exchange has been completed
 const FRIENDS = [
@@ -208,7 +208,7 @@ export default function ProfileScreen() {
               style={[styles.activityRow, getShadow(isDark)]}
               onPress={() => router.push(`/thread/${item.threadId}`)}
             >
-              <View style={[styles.activityIcon, { backgroundColor: item.color }]}>
+              <View style={[styles.activityIcon, { backgroundColor: item.colorKey === 'teal' ? C.teal : item.colorKey === 'purple' ? C.purple : '#C0392B' }]}>
                 <MaterialIcons name={item.icon as any} size={14} color="#fff" />
               </View>
               <View style={styles.activityInfo}>

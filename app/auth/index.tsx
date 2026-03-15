@@ -4,7 +4,7 @@
  * Actual auth is stubbed (issue #13 — blocked on backend).
  */
 import {
-  View, Text, StyleSheet, SafeAreaView, Image,
+  View, Text, StyleSheet, SafeAreaView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useMemo } from 'react';

@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
@@ -69,7 +69,9 @@ export default function ThreadScreen() {
             <Avatar name={neighborName} size={36} />
             <View style={styles.headerInfo}>
               <Text style={styles.headerName}>{neighborName}</Text>
-              <Text style={styles.headerSubtitle}>Borrowing 1 · Lending 1</Text>
+              <Text style={styles.headerSubtitle}>
+                {`Borrowing ${thread.borrowingCount ?? 0} · Lending ${thread.lendingCount ?? 0}`}
+              </Text>
             </View>
           </TouchableOpacity>
           <AnimatedButton
@@ -189,7 +191,12 @@ export default function ThreadScreen() {
             multiline
             onSubmitEditing={handleSend}
           />
-          <TouchableOpacity style={styles.attachButton}>
+          <TouchableOpacity
+            style={styles.attachButton}
+            onPress={() => {
+              // TODO: attachments (photos, book requests) — issue #18
+            }}
+          >
             <MaterialIcons name="add" size={22} color={C.gray} />
           </TouchableOpacity>
           <AnimatedButton style={[styles.sendButton, getShadow(isDark)]} onPress={handleSend}>

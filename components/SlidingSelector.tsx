@@ -16,7 +16,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { Colors, DarkColors, Shadow, Radius, Font, getShadow } from '../constants/theme';
+import { Colors, DarkColors, Radius, Font, getShadow } from '../constants/theme';
 import { useIsDark } from '../store/theme';
 
 export type SelectorOption =

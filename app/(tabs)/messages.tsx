@@ -1,7 +1,7 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { Avatar } from '../../components/Avatar';
 import { useThreads } from '../../store/threads';
 import { useIsDark } from '../../store/theme';
@@ -49,7 +49,7 @@ export default function MessagesScreen() {
         name: t.neighborName,
         preview: lastText,
         time: formatTime(t.lastUpdated),
-        unread: t.id === '1',
+        unread: t.unread ?? false,
         borrowing: t.borrowingCount ?? 0,
         lending: t.lendingCount ?? 0,
       };

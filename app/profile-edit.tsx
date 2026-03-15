@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
-import { Shadow, Radius, Font, getColors, getShadow } from '../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../constants/theme';
 import { Avatar } from '../components/Avatar';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { SlidingSelector } from '../components/SlidingSelector';

@@ -5,7 +5,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { router } from 'expo-router';
-import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useWishlist } from '../../store/wishlist';
@@ -13,12 +13,6 @@ import { useBooks } from '../../store/library';
 import { useIsDark } from '../../store/theme';
 
 type LibraryTab = 'lending' | 'borrowing' | 'wishlist';
-
-const TAB_COLOR: Record<LibraryTab, string> = {
-  lending:   Colors.teal,
-  borrowing: Colors.purple,
-  wishlist:  '#555',
-};
 
 export default function LibraryScreen() {
   const isDark = useIsDark();
@@ -50,7 +44,7 @@ export default function LibraryScreen() {
       <View style={styles.header}>
         <Text style={styles.heading}>Your Library</Text>
         <AnimatedButton style={[styles.addButton, getShadow(isDark)]} onPress={() => router.push('/add-book')}>
-          <MaterialIcons name="add" size={16} color={Colors.white} />
+          <MaterialIcons name="add" size={16} color={C.white} />
           <Text style={styles.addButtonText}>Add Book</Text>
         </AnimatedButton>
       </View>
@@ -238,7 +232,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       backgroundColor: C.teal, borderWidth: 1, borderColor: C.black,
       borderRadius: Radius.card, paddingHorizontal: 12, paddingVertical: 7,
     },
-    addButtonText: { color: Colors.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
+    addButtonText: { color: C.white, fontWeight: '700', fontFamily: Font.bold, fontSize: 13 },
 
     tabBar: {
       flexDirection: 'row', position: 'relative',
@@ -253,7 +247,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     },
     tab: { flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
     tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.gray },
-    tabTextActive: { color: Colors.white },
+    tabTextActive: { color: C.white },
 
     scroll: { flex: 1 },
     list: { paddingHorizontal: 16, paddingBottom: 32, gap: 8 },
@@ -264,7 +258,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       borderRadius: Radius.pill, borderWidth: 1, borderColor: C.black,
       minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5,
     },
-    sectionCountText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: Colors.white },
+    sectionCountText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: C.white },
 
     card: {
       flexDirection: 'row', borderWidth: 1, borderColor: C.black,

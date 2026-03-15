@@ -64,7 +64,7 @@ export function useBooks(): LibraryBook[] {
     listeners.add(update);
     return () => { listeners.delete(update); };
   }, []);
-  return books;
+  return [...books];
 }
 
 export function useBook(id: string | undefined): LibraryBook | undefined {
