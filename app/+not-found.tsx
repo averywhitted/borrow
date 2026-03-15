@@ -51,7 +51,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     },
     code: {
       fontSize: 48, fontWeight: '800', fontFamily: Font.extraBold,
-      color: C.lightGray,
+      color: C.gray,
     },
     title: {
       fontSize: 18, fontWeight: '800', fontFamily: Font.extraBold,

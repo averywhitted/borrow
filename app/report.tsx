@@ -186,7 +186,7 @@ export default function ReportScreen() {
               textAlignVertical="top"
             />
             {isBug && (
-              <Text style={[styles.charCount, { color: description.length < 10 ? '#E53935' : C.lightGray }]}>
+              <Text style={[styles.charCount, { color: description.length < 10 ? '#E53935' : C.gray }]}>
                 {description.length < 10
                   ? `${10 - description.length} more characters needed`
                   : `${description.length} chars`}
@@ -211,7 +211,7 @@ export default function ReportScreen() {
           </AnimatedButton>
 
           {!isBug && (
-            <Text style={[styles.footerNote, { color: C.lightGray }]}>
+            <Text style={[styles.footerNote, { color: C.gray }]}>
               Submitting a false report may result in action against your account.
             </Text>
           )}

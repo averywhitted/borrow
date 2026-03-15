@@ -147,7 +147,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <Text style={[styles.version, { color: C.lightGray }]}>Version 0.1.0</Text>
+        <Text style={[styles.version, { color: C.gray }]}>Version 0.1.0</Text>
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>

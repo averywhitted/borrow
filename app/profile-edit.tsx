@@ -226,8 +226,8 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     pronounChipText: { fontSize: 13, fontFamily: Font.bold, fontWeight: '600' },
 
     bioFooter: { marginTop: 4, minHeight: 16 },
-    bioHint: { fontSize: 11, fontFamily: Font.regular, color: C.lightGray, fontStyle: 'italic' },
-    charCount: { fontSize: 11, fontFamily: Font.regular, color: C.lightGray, textAlign: 'right' },
+    bioHint: { fontSize: 11, fontFamily: Font.regular, color: C.gray, fontStyle: 'italic' },
+    charCount: { fontSize: 11, fontFamily: Font.regular, color: C.gray, textAlign: 'right' },
 
     input: {
       borderWidth: 1, borderColor: C.black,

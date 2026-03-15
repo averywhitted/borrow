@@ -235,26 +235,35 @@ export default function BookDetailScreen() {
         )}
 
         {/* ── History timeline ── */}
-        {history.length > 0 && (
+        {myBook && (
           <>
             <Text style={styles.sectionTitle}>History</Text>
-            <View style={styles.timeline}>
-              {history.map((entry, i) => (
-                <View key={i} style={styles.timelineRow}>
-                  <View style={styles.timelineLeft}>
-                    <View style={[styles.timelineDot, { backgroundColor: entry.type === 'lent' ? C.teal : C.purple }]} />
-                    {i < history.length - 1 && <View style={styles.timelineConnector} />}
+            {history.length > 0 ? (
+              <View style={styles.timeline}>
+                {history.map((entry, i) => (
+                  <View key={i} style={styles.timelineRow}>
+                    <View style={styles.timelineLeft}>
+                      <View style={[styles.timelineDot, { backgroundColor: entry.type === 'lent' ? C.teal : C.purple }]} />
+                      {i < history.length - 1 && <View style={styles.timelineConnector} />}
+                    </View>
+                    <View style={styles.timelineBody}>
+                      <Text style={styles.timelineEvent}>
+                        {entry.event}{' '}
+                        <Text style={styles.timelinePerson}>{entry.person}</Text>
+                      </Text>
+                      <Text style={styles.timelineDates}>{entry.dates}</Text>
+                    </View>
                   </View>
-                  <View style={styles.timelineBody}>
-                    <Text style={styles.timelineEvent}>
-                      {entry.event}{' '}
-                      <Text style={styles.timelinePerson}>{entry.person}</Text>
-                    </Text>
-                    <Text style={styles.timelineDates}>{entry.dates}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
+                ))}
+              </View>
+            ) : (
+              <View style={[styles.historyEmpty, { backgroundColor: C.white, borderColor: C.black }]}>
+                <MaterialIcons name="history" size={22} color={C.lightGray} />
+                <Text style={[styles.historyEmptyText, { color: C.gray }]}>
+                  Once this book has been borrowed, the lending history will appear here.
+                </Text>
+              </View>
+            )}
           </>
         )}
 
@@ -467,7 +476,13 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   timelineBody: { flex: 1, paddingBottom: 16 },
   timelineEvent: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
   timelinePerson: { fontFamily: Font.bold, fontWeight: '700', color: C.black },
-  timelineDates: { fontSize: 11, fontFamily: Font.regular, color: C.lightGray, marginTop: 2 },
+  timelineDates: { fontSize: 11, fontFamily: Font.regular, color: C.gray, marginTop: 2 },
+  historyEmpty: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    borderWidth: 1, borderRadius: Radius.card,
+    padding: 14, marginBottom: 24,
+  },
+  historyEmptyText: { flex: 1, fontSize: 13, fontFamily: Font.regular, lineHeight: 19 },
 
   // Lenders
   lendersSectionTitle: {
@@ -486,7 +501,7 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   lenderDistance: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   lenderStats: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   lenderStat: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
-  lenderStatDot: { fontSize: 11, color: C.lightGray },
+  lenderStatDot: { fontSize: 11, color: C.gray },
   requestButton: {
     backgroundColor: C.purple, borderWidth: 1, borderColor: C.black,
     borderRadius: Radius.card, paddingHorizontal: 14, paddingVertical: 8,

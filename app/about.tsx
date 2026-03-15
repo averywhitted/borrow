@@ -43,24 +43,24 @@ export default function AboutScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
 
-        {/* Hero */}
+        {/* Hero + description — all in one card with shadow */}
         <View style={[styles.hero, { backgroundColor: C.white, borderColor: C.black }, getShadow(isDark)]}>
-          <View style={[styles.appIcon, { backgroundColor: C.teal, borderColor: C.black }]}>
+          <View style={[styles.appIcon, { backgroundColor: C.teal, borderColor: C.black }, getShadow(isDark)]}>
             <MaterialIcons name="menu-book" size={32} color={C.white} />
           </View>
           <Text style={[styles.appName, { color: C.black }]}>Borrow</Text>
           <Text style={[styles.appTagline, { color: C.gray }]}>
             Share books with your neighbors.
           </Text>
-          <View style={[styles.versionBadge, { backgroundColor: C.background, borderColor: C.lightGray }]}>
+          <View style={[styles.versionBadge, { backgroundColor: C.background, borderColor: C.black }]}>
             <Text style={[styles.versionText, { color: C.gray }]}>
               Version {APP_VERSION} (build {BUILD})
             </Text>
           </View>
-        </View>
 
-        {/* Description */}
-        <View style={[styles.card, { backgroundColor: C.white, borderColor: C.black }]}>
+          {/* Divider */}
+          <View style={[styles.divider, { backgroundColor: C.lightGray }]} />
+
           <Text style={[styles.descText, { color: C.black }]}>
             Borrow is a hyper-local book lending app. Find books your neighbors have available, request to borrow them, and return them when you're done. No library card needed — just neighbors helping neighbors.
           </Text>
@@ -82,14 +82,14 @@ export default function AboutScreen() {
               >
                 <MaterialIcons name={item.icon as any} size={20} color={C.gray} />
                 <Text style={[styles.linkLabel, { color: C.black }]}>{item.label}</Text>
-                <MaterialIcons name="chevron-right" size={18} color={C.lightGray} />
+                <MaterialIcons name="chevron-right" size={18} color={C.gray} />
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* Footer */}
-        <Text style={[styles.footerNote, { color: C.lightGray }]}>
+        <Text style={[styles.footerNote, { color: C.gray }]}>
           Made with ♥ in New York{'\n'}© 2026 Borrow Inc.
         </Text>
 
@@ -113,7 +113,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
 
     hero: {
       alignItems: 'center', borderWidth: 1, borderRadius: Radius.card,
-      padding: 28, gap: 8,
+      padding: 24, gap: 8,
     },
     appIcon: {
       width: 64, height: 64, borderRadius: 16, borderWidth: 1,
@@ -127,9 +127,10 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       paddingHorizontal: 12, paddingVertical: 4, marginTop: 4,
     },
     versionText: { fontSize: 11, fontFamily: Font.regular },
+    divider: { width: '100%', height: 1, marginVertical: 8 },
+    descText: { fontSize: 14, fontFamily: Font.regular, lineHeight: 22, textAlign: 'center' },
 
     card: { borderWidth: 1, borderRadius: Radius.card, padding: 16 },
-    descText: { fontSize: 14, fontFamily: Font.regular, lineHeight: 22 },
 
     section: { gap: 10 },
     sectionLabel: {

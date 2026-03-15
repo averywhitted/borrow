@@ -9,6 +9,7 @@ import { Colors, Shadow, Radius, Font, getColors, getShadow } from '../../consta
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
+import { useBooks } from '../../store/library';
 import { useIsDark } from '../../store/theme';
 
 const GENRES = ['Fantasy', 'Sci-Fi', 'Mystery', 'LGBTQ+', 'Horror', 'Romance'];
@@ -199,7 +200,12 @@ export default function HomeScreen() {
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
+  // Hide books that are already in the user's library (matched by title)
+  const libraryBooks = useBooks();
+  const libraryTitles = new Set(libraryBooks.map(b => b.title.toLowerCase()));
+
   const filteredBooks = BOOKS
+    .filter((b) => !libraryTitles.has(b.title.toLowerCase()))
     .filter((b) => !activeGenre || b.genre === activeGenre)
     .filter((b) => !query ||
       b.title.toLowerCase().includes(query.toLowerCase()) ||

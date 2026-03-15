@@ -49,7 +49,9 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       padding: 14, marginBottom: 24, gap: 12,
     },
     profileInfo: { flex: 1, gap: 6 },
+    nameRow:  { flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' },
     name:     { fontSize: 15, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+    pronouns: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
     location: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
 
     statsRow: {
@@ -133,7 +135,10 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <Avatar name="Avery Whitted" size={52} />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>Avery Whitted</Text>
+            <View style={styles.nameRow}>
+              <Text style={styles.name}>Avery Whitted</Text>
+              <Text style={styles.pronouns}>they/them</Text>
+            </View>
             <Text style={styles.location}>
               <MaterialIcons name="place" size={11} color={C.gray} /> Brooklyn, NY
             </Text>
@@ -161,7 +166,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Genre preferences */}
-        <Text style={styles.sectionTitle}>Genres</Text>
+        <Text style={styles.sectionTitle}>Favorite Genres</Text>
         <View style={styles.genreRow}>
           {MY_GENRES.map(g => (
             <View key={g} style={styles.genreTag}>

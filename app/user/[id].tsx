@@ -12,14 +12,14 @@ import { useIsDark } from '../../store/theme';
 // Placeholder user data — will come from API
 type UserBook = { id: string; title: string; author: string; available: boolean };
 type UserData = {
-  id: string; name: string; location: string; bio: string;
+  id: string; name: string; pronouns?: string; location: string; bio: string;
   stats: { books: number; lends: number; borrows: number; rating: number };
   books: UserBook[];
 };
 
 const USERS: Record<string, UserData> = {
   'jaydon': {
-    id: 'jaydon', name: 'Jaydon Workman', location: 'Brooklyn, NY', bio: 'Big sci-fi and literary fiction reader. I lend happily — just return on time 😄',
+    id: 'jaydon', name: 'Jaydon Workman', pronouns: 'he/him', location: 'Brooklyn, NY', bio: 'Big sci-fi and literary fiction reader. I lend happily — just return on time 😄',
     stats: { books: 24, lends: 14, borrows: 8, rating: 4.8 },
     books: [
       { id: 'u1', title: 'The Song of Achilles', author: 'Madeline Miller', available: true },
@@ -30,7 +30,7 @@ const USERS: Record<string, UserData> = {
     ],
   },
   'priya': {
-    id: 'priya', name: 'Priya Okonkwo', location: 'Brooklyn, NY', bio: "I read mostly fiction and love discovering new authors. Currently working through Octavia Butler's back catalogue.",
+    id: 'priya', name: 'Priya Okonkwo', pronouns: 'she/her', location: 'Brooklyn, NY', bio: "I read mostly fiction and love discovering new authors. Currently working through Octavia Butler's back catalogue.",
     stats: { books: 18, lends: 11, borrows: 7, rating: 5.0 },
     books: [
       { id: 'u6', title: 'Parable of the Sower', author: 'Octavia Butler', available: true },
@@ -104,7 +104,12 @@ export default function UserProfileScreen() {
           <View style={styles.profileTop}>
             <Avatar name={user.name} size={56} />
             <View style={styles.profileInfo}>
-              <Text style={styles.name}>{user.name}</Text>
+              <View style={styles.nameRow}>
+                <Text style={styles.name}>{user.name}</Text>
+                {user.pronouns ? (
+                  <Text style={styles.pronouns}>{user.pronouns}</Text>
+                ) : null}
+              </View>
               <View style={styles.locationRow}>
                 <MaterialIcons name="place" size={12} color={C.gray} />
                 <Text style={styles.location}>{user.location}</Text>
@@ -202,7 +207,9 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   },
   profileTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   profileInfo: { flex: 1, gap: 4 },
+  nameRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' },
   name: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.black },
+  pronouns: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   location: { fontSize: 12, fontFamily: Font.regular, color: C.gray },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
