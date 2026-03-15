@@ -83,21 +83,21 @@ export default function UserProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* Back + report — sticky above scroll */}
+      <View style={styles.navRow}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={20} color={C.black} />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.reportBtn}
+          onPress={() => router.push(`/report?type=user&targetName=${encodeURIComponent(user.name)}&targetId=${user.id}`)}
+        >
+          <MaterialIcons name="flag" size={18} color={C.gray} />
+        </TouchableOpacity>
+      </View>
 
-        {/* Back + report */}
-        <View style={styles.navRow}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <MaterialIcons name="arrow-back" size={20} color={C.black} />
-            <Text style={styles.backText}>Back</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.reportBtn}
-            onPress={() => router.push(`/report?type=user&targetName=${encodeURIComponent(user.name)}&targetId=${user.id}`)}
-          >
-            <MaterialIcons name="flag" size={18} color={C.gray} />
-          </TouchableOpacity>
-        </View>
+      <ScrollView contentContainerStyle={styles.content}>
 
         {/* Profile card */}
         <View style={[styles.profileCard, getShadow(isDark)]}>
@@ -195,7 +195,7 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   safeArea: { flex: 1, backgroundColor: C.background },
   content: { padding: 16, paddingBottom: 32 },
 
-  navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10 },
   backButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
   reportBtn: { padding: 6 },

@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getColors } from '../../constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useHasUnreadMessages } from '../../store/threads';
@@ -15,7 +16,7 @@ function MessagesTabIcon({ color, size }: { color: string; size: number }) {
   const dotColor = HAS_PENDING_REQUESTS ? C.purple : hasUnread ? C.teal : null;
 
   return (
-    <View style={{ height: 60, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ height: 64, justifyContent: 'center', alignItems: 'center' }}>
       <View style={{ width: size + 14, height: size + 14, justifyContent: 'center', alignItems: 'center' }}>
         <MaterialIcons name="chat-bubble-outline" size={size} color={color} />
         {dotColor && (
@@ -33,7 +34,7 @@ function MessagesTabIcon({ color, size }: { color: string; size: number }) {
 
 function TabIcon({ name, color, size }: { name: React.ComponentProps<typeof MaterialIcons>['name']; color: string; size: number }) {
   return (
-    <View style={{ height: 60, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ height: 64, justifyContent: 'center', alignItems: 'center' }}>
       <MaterialIcons name={name} size={size} color={color} />
     </View>
   );
@@ -42,6 +43,9 @@ function TabIcon({ name, color, size }: { name: React.ComponentProps<typeof Mate
 export default function TabLayout() {
   const isDark = useIsDark();
   const C = getColors(isDark);
+  const insets = useSafeAreaInsets();
+  const TAB_H = 64;
+  const barHeight = TAB_H + insets.bottom;
 
   return (
     <Tabs
@@ -51,12 +55,12 @@ export default function TabLayout() {
           backgroundColor: C.white,
           borderTopWidth: 2,
           borderTopColor: C.black,
-          height: 60,
-          paddingBottom: 0,
+          height: barHeight,
+          paddingBottom: insets.bottom,
           paddingTop: 0,
         },
         tabBarItemStyle: {
-          height: 60,
+          height: TAB_H,
           justifyContent: 'center',
           alignItems: 'center',
           padding: 0,

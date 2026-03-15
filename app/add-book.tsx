@@ -1,6 +1,7 @@
 import {
   View, Text, TextInput, TouchableOpacity,
   ScrollView, StyleSheet, SafeAreaView,
+  KeyboardAvoidingView, Keyboard, Platform, TouchableWithoutFeedback,
 } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -155,77 +156,90 @@ export default function AddBookScreen() {
   // ── Search state ────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.topRow}>
-          <Text style={styles.heading}>Add a Book</Text>
-          <TouchableOpacity onPress={() => router.back()}>
-            <MaterialIcons name="close" size={24} color={C.black} />
-          </TouchableOpacity>
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.container}>
+            <View style={styles.topRow}>
+              <Text style={styles.heading}>Add a Book</Text>
+              <TouchableOpacity onPress={() => { Keyboard.dismiss(); router.back(); }}>
+                <MaterialIcons name="close" size={24} color={C.black} />
+              </TouchableOpacity>
+            </View>
 
-        <View style={[styles.searchBar, getShadow(isDark)]}>
-          <MaterialIcons name="search" size={18} color={C.gray} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by title or author"
-            placeholderTextColor={C.gray}
-            value={query}
-            onChangeText={setQuery}
-            autoFocus
-            autoCorrect={false}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')}>
-              <MaterialIcons name="close" size={18} color={C.gray} />
-            </TouchableOpacity>
-          )}
-        </View>
+            <View style={[styles.searchBar, getShadow(isDark)]}>
+              <MaterialIcons name="search" size={18} color={C.gray} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by title or author"
+                placeholderTextColor={C.gray}
+                value={query}
+                onChangeText={setQuery}
+                autoFocus
+                autoCorrect={false}
+                returnKeyType="search"
+                onSubmitEditing={Keyboard.dismiss}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => { setQuery(''); Keyboard.dismiss(); }}>
+                  <MaterialIcons name="close" size={18} color={C.gray} />
+                </TouchableOpacity>
+              )}
+            </View>
 
-        <Text style={styles.resultsLabel}>
-          {query.length > 1 ? `${results.length} results` : 'Popular right now'}
-        </Text>
+            <Text style={styles.resultsLabel}>
+              {query.length > 1 ? `${results.length} results` : 'Popular right now'}
+            </Text>
 
-        {/* Results list — leaves room for the bottom bar */}
-        <ScrollView contentContainerStyle={styles.resultsList}>
-          {results.map((book) => (
-            <AnimatedButton
-              key={book.id}
-              style={[styles.resultRow, getShadow(isDark)]}
-              onPress={() => setSelected(book)}
+            {/* Results list — leaves room for the bottom bar */}
+            <ScrollView
+              contentContainerStyle={styles.resultsList}
+              keyboardDismissMode="on-drag"
             >
-              <BookCover title={book.title} author={book.author} width={48} height={64} />
-              <View style={styles.resultInfo}>
-                <Text style={styles.resultTitle}>{book.title}</Text>
-                <Text style={styles.resultAuthor}>{book.author}</Text>
-                <View style={styles.genrePillSmall}>
-                  <Text style={styles.genreTextSmall}>{book.genre}</Text>
-                </View>
-              </View>
-              <View style={[styles.addCardButton]}>
-                <MaterialIcons name="add" size={16} color={C.white} />
-              </View>
-            </AnimatedButton>
-          ))}
-        </ScrollView>
-      </View>
+              {results.map((book) => (
+                <AnimatedButton
+                  key={book.id}
+                  style={[styles.resultRow, getShadow(isDark)]}
+                  onPress={() => { Keyboard.dismiss(); setSelected(book); }}
+                >
+                  <BookCover title={book.title} author={book.author} width={48} height={64} />
+                  <View style={styles.resultInfo}>
+                    <Text style={styles.resultTitle}>{book.title}</Text>
+                    <Text style={styles.resultAuthor}>{book.author}</Text>
+                    <View style={styles.genrePillSmall}>
+                      <Text style={styles.genreTextSmall}>{book.genre}</Text>
+                    </View>
+                  </View>
+                  <View style={[styles.addCardButton]}>
+                    <MaterialIcons name="add" size={16} color={C.white} />
+                  </View>
+                </AnimatedButton>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
 
-      {/* Sticky bottom bar: manual + scan */}
-      <View style={styles.bottomBar}>
-        <AnimatedButton
-          style={[styles.bottomAction, getShadow(isDark)]}
-          onPress={() => router.push('/add-book-manual')}
-        >
-          <MaterialIcons name="edit" size={18} color={C.black} />
-          <Text style={styles.bottomActionText}>Manual</Text>
-        </AnimatedButton>
-        <AnimatedButton
-          style={[styles.bottomActionPrimary, getShadow(isDark)]}
-          onPress={() => router.push('/scan-barcode')}
-        >
-          <MaterialCommunityIcons name="barcode" size={22} color={C.white} />
-          <Text style={styles.bottomActionPrimaryText}>Scan Barcode</Text>
-        </AnimatedButton>
-      </View>
+        {/* Sticky bottom bar: manual + scan */}
+        <View style={styles.bottomBar}>
+          <AnimatedButton
+            style={[styles.bottomAction, getShadow(isDark)]}
+            onPress={() => router.push('/add-book-manual')}
+          >
+            <MaterialIcons name="edit" size={18} color={C.black} />
+            <Text style={styles.bottomActionText}>Manual</Text>
+          </AnimatedButton>
+          <AnimatedButton
+            style={[styles.bottomActionPrimary, getShadow(isDark)]}
+            onPress={() => router.push('/scan-barcode')}
+          >
+            <MaterialCommunityIcons name="barcode" size={22} color={C.white} />
+            <Text style={styles.bottomActionPrimaryText}>Scan Barcode</Text>
+          </AnimatedButton>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

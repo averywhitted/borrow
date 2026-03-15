@@ -106,6 +106,11 @@ export default function SettingsScreen() {
               icon="lock-outline" label="Privacy"
               onPress={() => router.push('/privacy')}
               isDark={isDark}
+            />
+            <SettingsRow
+              icon="block" label="Blocked Users"
+              onPress={() => router.push('/blocked-users')}
+              isDark={isDark}
               last
             />
           </View>

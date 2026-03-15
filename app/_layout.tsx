@@ -42,6 +42,7 @@ export default function RootLayout() {
       <Stack.Screen name="privacy" />
       <Stack.Screen name="about" />
       <Stack.Screen name="report" />
+      <Stack.Screen name="blocked-users" />
       <Stack.Screen name="auth/index" />
       <Stack.Screen name="auth/login" />
       <Stack.Screen name="auth/signup" />

@@ -6,7 +6,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
 import { Radius, Font, getColors, getShadow } from '../../constants/theme';
-import { WheelPicker } from '../../components/WheelPicker';
 import { AnimatedButton } from '../../components/AnimatedButton';
 import { Avatar } from '../../components/Avatar';
 import { getOrCreateThread, addBorrowRequest } from '../../store/threads';
@@ -97,34 +96,54 @@ export default function BorrowRequestScreen() {
           )}
         </View>
 
-        {/* Wheel date picker */}
+        {/* Date stepper */}
         <View style={[styles.datePickerCard, getShadow(isDark)]}>
           <View style={styles.datePickerColumn}>
             <Text style={styles.datePickerLabel}>From</Text>
-            <WheelPicker
-              items={dates}
-              selectedIndex={fromIndex}
-              onSelect={handleFromChange}
-              monthColor={C.teal}
-              dayColor={C.black}
-              dimColor={isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.25)'}
-              indicatorBorder={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}
-              indicatorBg={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}
-            />
+            <View style={styles.stepper}>
+              <TouchableOpacity
+                style={[styles.stepperBtn, fromIndex === 0 && styles.stepperBtnDisabled]}
+                onPress={() => fromIndex > 0 && handleFromChange(fromIndex - 1)}
+                activeOpacity={0.6}
+              >
+                <MaterialIcons name="chevron-left" size={24} color={fromIndex === 0 ? C.lightGray : C.black} />
+              </TouchableOpacity>
+              <View style={styles.stepperDate}>
+                <Text style={[styles.stepperMonth, { color: C.teal }]}>{dates[fromIndex].split(' ')[0]}</Text>
+                <Text style={[styles.stepperDay, { color: C.black }]}>{dates[fromIndex].split(' ')[1]}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => handleFromChange(Math.min(fromIndex + 1, dates.length - 15))}
+                activeOpacity={0.6}
+              >
+                <MaterialIcons name="chevron-right" size={24} color={C.black} />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.datePickerDivider} />
           <View style={styles.datePickerColumn}>
             <Text style={styles.datePickerLabel}>Until</Text>
-            <WheelPicker
-              items={dates}
-              selectedIndex={untilIndex}
-              onSelect={(i) => setUntilIndex(Math.max(fromIndex + 7, i))}
-              monthColor={C.teal}
-              dayColor={C.black}
-              dimColor={isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.25)'}
-              indicatorBorder={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}
-              indicatorBg={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}
-            />
+            <View style={styles.stepper}>
+              <TouchableOpacity
+                style={[styles.stepperBtn, untilIndex <= fromIndex + 7 && styles.stepperBtnDisabled]}
+                onPress={() => untilIndex > fromIndex + 7 && setUntilIndex(untilIndex - 1)}
+                activeOpacity={0.6}
+              >
+                <MaterialIcons name="chevron-left" size={24} color={untilIndex <= fromIndex + 7 ? C.lightGray : C.black} />
+              </TouchableOpacity>
+              <View style={styles.stepperDate}>
+                <Text style={[styles.stepperMonth, { color: C.teal }]}>{dates[untilIndex].split(' ')[0]}</Text>
+                <Text style={[styles.stepperDay, { color: C.black }]}>{dates[untilIndex].split(' ')[1]}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => setUntilIndex(Math.min(untilIndex + 1, dates.length - 1))}
+                activeOpacity={0.6}
+              >
+                <MaterialIcons name="chevron-right" size={24} color={C.black} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -186,13 +205,23 @@ function makeStyles(C: ReturnType<typeof getColors>) {
       borderRadius: Radius.card, backgroundColor: C.white,
       marginBottom: 24, overflow: 'hidden',
     },
-    datePickerColumn: { flex: 1 },
+    datePickerColumn: { flex: 1, alignItems: 'center', paddingVertical: 16 },
     datePickerLabel: {
       fontSize: 11, fontWeight: '700', fontFamily: Font.bold,
       color: C.black, textTransform: 'uppercase', letterSpacing: 0.8,
-      textAlign: 'center', paddingTop: 14, paddingBottom: 4,
+      textAlign: 'center', marginBottom: 12,
     },
     datePickerDivider: { width: 1, backgroundColor: C.lightGray },
+    stepper: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    stepperBtn: {
+      width: 36, height: 36, borderRadius: 18,
+      alignItems: 'center', justifyContent: 'center',
+      backgroundColor: C.background,
+    },
+    stepperBtnDisabled: { opacity: 0.4 },
+    stepperDate: { alignItems: 'center', minWidth: 56 },
+    stepperMonth: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold },
+    stepperDay: { fontSize: 28, fontWeight: '800', fontFamily: Font.extraBold, lineHeight: 32 },
     sectionLabel: {
       fontSize: 13, fontWeight: '800', fontFamily: Font.extraBold,
       color: C.gray, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10,

@@ -8,7 +8,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Radius, Font, getColors, getShadow } from '../../constants/theme';
 import { BookCover } from '../../components/BookCover';
 import { AnimatedButton } from '../../components/AnimatedButton';
-import { useIsWishlisted, toggleWishlist } from '../../store/wishlist';
+import { toggleWishlist } from '../../store/wishlist';
 import { useBooks } from '../../store/library';
 import { useIsDark } from '../../store/theme';
 
@@ -42,23 +42,6 @@ function MiniStars({ rating }: { rating: number }) {
         />
       ))}
     </View>
-  );
-}
-
-// ── Bookmark button ───────────────────────────────────────────────────────────
-function BookmarkButton({ book, onPress }: { book: Book; onPress: () => void }) {
-  const saved = useIsWishlisted(book.id);
-  const isDark = useIsDark();
-  const C = getColors(isDark);
-  const styles = useMemo(() => makeStyles(C), [isDark]);
-  return (
-    <AnimatedButton
-      style={[styles.wishlistButton, saved && styles.wishlistButtonSaved, getShadow(isDark)]}
-      onPress={onPress}
-    >
-      <MaterialIcons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color="#FFFFFF" />
-      {!saved && <Text style={styles.wishlistPlus}>+</Text>}
-    </AnimatedButton>
   );
 }
 
@@ -292,20 +275,12 @@ export default function HomeScreen() {
                   <Text style={styles.bookNearby}>{book.nearby} near you</Text>
                 </View>
               </View>
-              <View style={styles.cardActions}>
-                <BookmarkButton
-                  book={book}
-                  onPress={() =>
-                    toggleWishlist({ id: book.id, title: book.title, author: book.author, nearbyCount: book.nearby })
-                  }
-                />
-                <AnimatedButton
-                  style={[styles.moreButton, getShadow(isDark)]}
-                  onPress={(e) => { e.stopPropagation?.(); setOptionsBook(book); }}
-                >
-                  <MaterialIcons name="more-horiz" size={20} color={C.black} />
-                </AnimatedButton>
-              </View>
+              <AnimatedButton
+                style={[styles.moreButton, getShadow(isDark)]}
+                onPress={(e) => { e.stopPropagation?.(); setOptionsBook(book); }}
+              >
+                <MaterialIcons name="more-horiz" size={22} color={C.black} />
+              </AnimatedButton>
             </TouchableOpacity>
           ))
         )}
@@ -367,26 +342,13 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     bookAuthor: { fontSize: 12, fontFamily: Font.regular, color: C.gray, marginBottom: 4 },
     nearbyRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
     bookNearby: { fontSize: 11, color: C.gray, fontFamily: Font.regular },
-    cardActions: { gap: 8, alignItems: 'center' },
-
-    // Bookmark button
-    wishlistButton: {
-      width: 90, height: 40,
-      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
-      backgroundColor: C.purple,
-      borderWidth: 1, borderColor: C.black,
-      borderRadius: Radius.card,
-    },
-    wishlistButtonSaved: { backgroundColor: C.teal },
-    wishlistPlus: { fontSize: 16, fontWeight: '800', fontFamily: Font.extraBold, color: C.white },
-
     // More button
     moreButton: {
-      width: 90, height: 40,
+      width: 40, height: 40,
       alignItems: 'center', justifyContent: 'center',
-      backgroundColor: C.lightGray,
+      backgroundColor: C.white,
       borderWidth: 1, borderColor: C.black,
-      borderRadius: Radius.card,
+      borderRadius: 20,
     },
 
     // Empty state

@@ -148,12 +148,12 @@ export default function BookDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={20} color={C.black} />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={20} color={C.black} />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.content}>
 
         {/* ── Book header ── */}
         <View style={styles.bookHeader}>
@@ -418,7 +418,7 @@ function makeStyles(C: ReturnType<typeof getColors>) { return StyleSheet.create(
   safeArea: { flex: 1, backgroundColor: C.background },
   content: { padding: 16, paddingBottom: 32 },
 
-  backButton: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 16 },
+  backButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 10 },
   backText: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
 
   // Book header
