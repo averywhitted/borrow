@@ -43,12 +43,12 @@ export function AnimatedButton({
       ]}
       onPressIn={(e) => {
         setPressed(true);
-        Animated.timing(press, { toValue: 1, duration: 60, useNativeDriver: true }).start();
+        Animated.timing(press, { toValue: 1, duration: 60, useNativeDriver: false }).start();
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
         setPressed(false);
-        Animated.spring(press, { toValue: 0, speed: 20, bounciness: 4, useNativeDriver: true }).start();
+        Animated.spring(press, { toValue: 0, speed: 20, bounciness: 4, useNativeDriver: false }).start();
         onPressOut?.(e);
       }}
       {...props}

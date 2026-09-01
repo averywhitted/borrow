@@ -67,7 +67,7 @@ export function SlidingSelector({ options, selected, onSelect, color, dark }: Pr
     Animated.timing(indicatorX, {
       toValue: idx * slotW,
       duration: 160,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
     onSelect(key);
   };

@@ -72,15 +72,15 @@ function OptionsModal({ book, onClose }: { book: Book; onClose: () => void }) {
   // Animate in on mount
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(backdropOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.timing(sheetY, { toValue: 0, duration: 260, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 1, duration: 200, useNativeDriver: false }),
+      Animated.timing(sheetY, { toValue: 0, duration: 260, useNativeDriver: false }),
     ]).start();
   }, []);
 
   const handleClose = () => {
     Animated.parallel([
-      Animated.timing(backdropOpacity, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(sheetY, { toValue: 400, duration: 200, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 160, useNativeDriver: false }),
+      Animated.timing(sheetY, { toValue: 400, duration: 200, useNativeDriver: false }),
     ]).start(() => onClose());
   };
 
@@ -124,7 +124,7 @@ function OptionsModal({ book, onClose }: { book: Book; onClose: () => void }) {
       </Animated.View>
 
       {/* Slide-up sheet */}
-      <View style={styles.sheetContainer} pointerEvents="box-none">
+      <View style={[styles.sheetContainer, { pointerEvents: 'box-none' }]}>
         <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
           <View style={styles.handle} />
 

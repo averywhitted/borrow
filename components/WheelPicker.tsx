@@ -74,7 +74,7 @@ export function WheelPicker({
           styles.indicator,
           { borderColor: indicatorBorder, backgroundColor: indicatorBg },
         ]}
-        pointerEvents="none"
+        style={{ pointerEvents: 'none' }}
       />
       <ScrollView
         ref={ref}
