@@ -1,0 +1,201 @@
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated } from 'react-native';
+import { useState, useRef, useCallback, useMemo } from 'react';
+import { router } from 'expo-router';
+import { Radius, Font, getColors, getShadow } from '../../constants/theme';
+import { Avatar } from '../../components/Avatar';
+import { useThreads } from '../../store/threads';
+import { useIsDark } from '../../store/theme';
+
+const REQUESTS = [
+  { id: '4', name: 'Sasha Volkov', book: 'Dune', requestedDate: 'Mar 12', duration: '3 weeks', incoming: true },
+  { id: '5', name: 'Lily Chen', book: 'Kindred', requestedDate: 'Mar 10', duration: '4 weeks', incoming: false, status: 'pending' },
+];
+
+function formatTime(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 60_000) return 'Just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return 'Yesterday';
+}
+
+export default function MessagesScreen() {
+  const isDark = useIsDark();
+  const C = getColors(isDark);
+  const styles = useMemo(() => makeStyles(C), [isDark]);
+
+  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
+  const [tabBarWidth, setTabBarWidth] = useState(0);
+  const indicatorX = useRef(new Animated.Value(0)).current;
+  const threads = useThreads();
+
+  const switchTab = useCallback((tab: 'inbox' | 'requests') => {
+    setActiveTab(tab);
+    const toValue = tab === 'inbox' ? 0 : (tabBarWidth - 8) / 2;
+    Animated.timing(indicatorX, {
+      toValue,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+  }, [tabBarWidth]);
+
+  // Derive inbox from thread store
+  const inbox = [...threads]
+    .sort((a, b) => b.lastUpdated - a.lastUpdated)
+    .map((t) => {
+      const lastText = [...t.messages].reverse().find((m) => m.text && !m.isStatus)?.text ?? '';
+      return {
+        id: t.id,
+        name: t.neighborName,
+        preview: lastText,
+        time: formatTime(t.lastUpdated),
+        unread: t.unread ?? false,
+        borrowing: t.borrowingCount ?? 0,
+        lending: t.lendingCount ?? 0,
+      };
+    });
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.heading}>Messages</Text>
+
+        {/* Animated tab selector */}
+        <View
+          style={styles.tabBar}
+          onLayout={(e) => setTabBarWidth(e.nativeEvent.layout.width)}
+        >
+          <Animated.View
+            style={[
+              styles.tabIndicator,
+              {
+                width: tabBarWidth > 0 ? (tabBarWidth - 8) / 2 : '50%',
+                transform: [{ translateX: indicatorX }],
+              },
+            ]}
+          />
+          <TouchableOpacity style={styles.tab} onPress={() => switchTab('inbox')}>
+            <Text style={[styles.tabText, activeTab === 'inbox' && styles.tabTextActive]}>Inbox</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tab} onPress={() => switchTab('requests')}>
+            <Text style={[styles.tabText, activeTab === 'requests' && styles.tabTextActive]}>Requests</Text>
+            {REQUESTS.length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{REQUESTS.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.list}>
+          {activeTab === 'inbox'
+            ? inbox.map((convo) => (
+                <TouchableOpacity
+                  key={convo.id}
+                  style={styles.row}
+                  onPress={() => router.push(`/thread/${convo.id}`)}
+                >
+                  <Avatar name={convo.name} size={44} />
+                  <View style={styles.rowInfo}>
+                    <View style={styles.rowTop}>
+                      <Text style={[styles.rowName, convo.unread && styles.rowNameUnread]}>{convo.name}</Text>
+                      <Text style={styles.rowTime}>{convo.time}</Text>
+                    </View>
+                    <Text style={styles.rowSubtitle}>Borrowing {convo.borrowing} · Lending {convo.lending}</Text>
+                    <Text style={styles.rowPreview} numberOfLines={1}>{convo.preview}</Text>
+                  </View>
+                  {convo.unread && <View style={styles.unreadDot} />}
+                </TouchableOpacity>
+              ))
+            : REQUESTS.map((req) => (
+                <TouchableOpacity
+                  key={req.id}
+                  style={styles.row}
+                  onPress={() => router.push(`/thread/${req.id}`)}
+                >
+                  <Avatar name={req.name} size={44} />
+                  <View style={styles.rowInfo}>
+                    <View style={styles.rowTop}>
+                      <Text style={styles.rowName}>{req.name}</Text>
+                      <Text style={styles.rowTime}>{req.requestedDate}</Text>
+                    </View>
+                    <Text style={styles.rowPreview}>
+                      {req.incoming ? 'Wants to borrow' : 'You requested'} · <Text style={{ fontFamily: Font.bold }}>{req.book}</Text>
+                    </Text>
+                    <Text style={styles.rowSubtitle}>Duration: {req.duration}</Text>
+                  </View>
+                  {req.incoming && <View style={styles.incomingDot} />}
+                </TouchableOpacity>
+              ))}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function makeStyles(C: ReturnType<typeof getColors>) {
+  return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: C.background },
+    container: { flex: 1, padding: 16 },
+    heading: { fontSize: 24, fontWeight: '800', fontFamily: Font.extraBold, color: C.black, marginBottom: 16 },
+
+    // Tab bar with sliding indicator
+    tabBar: {
+      flexDirection: 'row',
+      position: 'relative',
+      borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.pill,
+      backgroundColor: C.white,
+      marginBottom: 16,
+      padding: 3,
+    },
+    tabIndicator: {
+      position: 'absolute',
+      top: 3, bottom: 3, left: 3,
+      backgroundColor: C.black,
+      borderRadius: Radius.pill,
+    },
+    tab: {
+      flex: 1, flexDirection: 'row',
+      justifyContent: 'center', alignItems: 'center',
+      gap: 6, paddingVertical: 8,
+      borderRadius: Radius.pill,
+      zIndex: 1,
+    },
+    tabText: { fontSize: 13, fontWeight: '700', fontFamily: Font.bold, color: C.gray },
+    tabTextActive: { color: C.white },
+
+    badge: {
+      backgroundColor: C.purple, borderRadius: Radius.pill,
+      minWidth: 18, height: 18,
+      justifyContent: 'center', alignItems: 'center',
+      paddingHorizontal: 5,
+    },
+    badgeText: { fontSize: 10, fontWeight: '700', fontFamily: Font.bold, color: C.white },
+
+    list: { gap: 10, paddingBottom: 32 },
+    row: {
+      flexDirection: 'row', alignItems: 'center',
+      borderWidth: 1, borderColor: C.black,
+      borderRadius: Radius.card, backgroundColor: C.white,
+      padding: 12, gap: 12,
+    },
+    rowInfo: { flex: 1, gap: 3 },
+    rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    rowName: { fontSize: 14, fontWeight: '600', fontFamily: Font.bold, color: C.black },
+    rowNameUnread: { fontFamily: Font.extraBold },
+    rowTime: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+    rowSubtitle: { fontSize: 11, fontFamily: Font.regular, color: C.gray },
+    rowPreview: { fontSize: 13, fontFamily: Font.regular, color: C.gray },
+    unreadDot: {
+      width: 10, height: 10, borderRadius: 5,
+      backgroundColor: C.teal,
+      borderWidth: 1, borderColor: C.black,
+    },
+    incomingDot: {
+      width: 10, height: 10, borderRadius: 5,
+      backgroundColor: C.purple,
+      borderWidth: 1, borderColor: C.black,
+    },
+  });
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Borrow (web)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "start", "--web", "--clear"],
+      "port": 8081
+    }
+  ]
+}
